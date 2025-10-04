@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Costumer;
+namespace App\Http\Controllers\Customer;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-class RentalController extends Controller
+class DashboardController extends Controller
 {
     public function index()
     {
-        return inertia::render('Costumer/RentalPage');
+        return inertia::render('Customer/Dashboard');
     }
 }

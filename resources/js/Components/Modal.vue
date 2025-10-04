@@ -1,123 +1,128 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, watch } from 'vue';
 
 const props = defineProps({
-    show: {
+    modelValue: {
         type: Boolean,
-        default: false,
+        required: true
     },
-    maxWidth: {
+    size: {
         type: String,
-        default: '2xl',
+        default: 'md', // sm, md, lg, xl, full
+        validator: (value) => ['sm', 'md', 'lg', 'xl', 'full'].includes(value)
     },
-    closeable: {
+    maxHeight: {
+        type: String,
+        default: '90vh'
+    },
+    closeOnClickOutside: {
         type: Boolean,
-        default: true,
-    },
+        default: true
+    }
 });
 
-const emit = defineEmits(['close']);
-const dialog = ref();
-const showSlot = ref(props.show);
-
-watch(
-    () => props.show,
-    () => {
-        if (props.show) {
-            document.body.style.overflow = 'hidden';
-            showSlot.value = true;
-
-            dialog.value?.showModal();
-        } else {
-            document.body.style.overflow = '';
-
-            setTimeout(() => {
-                dialog.value?.close();
-                showSlot.value = false;
-            }, 200);
-        }
-    },
-);
+const emit = defineEmits(['update:modelValue', 'close']);
 
 const close = () => {
-    if (props.closeable) {
-        emit('close');
+    emit('update:modelValue', false);
+    emit('close');
+};
+
+const handleEscape = (e) => {
+    if (e.key === 'Escape' && props.modelValue) {
+        close();
     }
 };
 
-const closeOnEscape = (e) => {
-    if (e.key === 'Escape') {
-        e.preventDefault();
-
-        if (props.show) {
-            close();
-        }
-    }
+const preventScroll = () => {
+    document.body.style.overflow = 'hidden';
 };
 
-onMounted(() => document.addEventListener('keydown', closeOnEscape));
+const enableScroll = () => {
+    document.body.style.overflow = '';
+};
+
+onMounted(() => {
+    document.addEventListener('keydown', handleEscape);
+});
 
 onUnmounted(() => {
-    document.removeEventListener('keydown', closeOnEscape);
-
-    document.body.style.overflow = '';
+    document.removeEventListener('keydown', handleEscape);
+    enableScroll();
 });
 
-const maxWidthClass = computed(() => {
-    return {
-        sm: 'sm:max-w-sm',
-        md: 'sm:max-w-md',
-        lg: 'sm:max-w-lg',
-        xl: 'sm:max-w-xl',
-        '2xl': 'sm:max-w-2xl',
-    }[props.maxWidth];
+watch(() => props.modelValue, (newVal) => {
+    if (newVal) {
+        preventScroll();
+    } else {
+        enableScroll();
+    }
 });
+
+const modalSizes = {
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    full: 'max-w-full mx-4'
+};
 </script>
 
 <template>
-    <dialog
-        class="z-50 m-0 min-h-full min-w-full overflow-y-auto bg-transparent backdrop:bg-transparent"
-        ref="dialog"
+    <Transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
     >
         <div
-            class="fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:px-0"
-            scroll-region
+            v-if="modelValue"
+            class="fixed inset-0 z-50 overflow-y-auto"
         >
-            <Transition
-                enter-active-class="ease-out duration-300"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="ease-in duration-200"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
-                <div
-                    v-show="show"
-                    class="fixed inset-0 transform transition-all"
-                    @click="close"
-                >
-                    <div
-                        class="absolute inset-0 bg-gray-500 opacity-75"
-                    />
-                </div>
-            </Transition>
+            <!-- Backdrop -->
+            <div
+                class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                @click="closeOnClickOutside && close()"
+            ></div>
 
-            <Transition
-                enter-active-class="ease-out duration-300"
-                enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                enter-to-class="opacity-100 translate-y-0 sm:scale-100"
-                leave-active-class="ease-in duration-200"
-                leave-from-class="opacity-100 translate-y-0 sm:scale-100"
-                leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            >
+            <!-- Modal -->
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
                 <div
-                    v-show="show"
-                    class="mb-6 transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:mx-auto sm:w-full"
-                    :class="maxWidthClass"
+                    class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full"
+                    :class="modalSizes[size]"
+                    @click.stop
+                    :style="{ 'max-height': maxHeight }"
                 >
-                    <slot v-if="showSlot" />
+                    <!-- Header -->
+                    <div class="px-6 py-4 border-b border-gray-200" v-if="$slots.header">
+                        <div class="flex items-center justify-between">
+                            <div class="text-lg font-medium text-gray-900">
+                                <slot name="header"></slot>
+                            </div>
+                            <button
+                                @click="close"
+                                class="text-gray-400 hover:text-red-500 focus:outline-none"
+                            >
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="px-6 py-4 overflow-y-auto" :style="{ 'max-height': `calc(${maxHeight} - 10rem)` }">
+                        <slot></slot>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200" v-if="$slots.footer">
+                        <slot name="footer"></slot>
+                    </div>
                 </div>
-            </Transition>
+            </div>
         </div>
-    </dialog>
+    </Transition>
 </template>
