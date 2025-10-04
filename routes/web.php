@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Customer\RentalController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Internal\DashboardController;
+use App\Http\Controllers\Internal\VehicleController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -40,6 +41,7 @@ Route::prefix('customer')->middleware('auth')->name('customer.')->group(function
 
 Route::prefix('internal')->middleware('auth')->name('internal.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('vehicles', VehicleController::class);
 });
 
 Route::middleware('auth')->group(function () {

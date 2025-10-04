@@ -31,4 +31,8 @@ class Vehicle extends Model
     {
         return $this->morphOne(Asset::class, 'assetable');
     }
+
+    public function image(){
+        return $this->morphOne(Attachment::class, 'attachable');
+    }
 }

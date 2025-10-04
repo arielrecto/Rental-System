@@ -141,12 +141,12 @@ const handlePageChange = (page) => {
         </div>
 
         <!-- Pagination Component -->
-        <Pagination
+        <!-- <Pagination
             :current-page="currentPage"
             :total-pages="totalPages"
             :items-per-page="itemsPerPage"
             :total-items="filteredItems.length"
             @page-change="handlePageChange"
-        />
+        /> -->
     </div>
 </template>
