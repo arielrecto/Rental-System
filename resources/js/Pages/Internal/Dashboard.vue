@@ -16,14 +16,14 @@ const navigation = [
     {
         name: "Dashboard",
         icon: HomeIcon,
-        href: route('internal.dashboard'), // Example property
+        href: route("internal.dashboard"), // Example property
         isActive: false, // Example property
         children: [],
     },
     {
         name: "Vehicle Management",
         icon: TruckIcon,
-        href: route('internal.vehicles.index'), // Example property
+        href: route("internal.vehicles.index"), // Example property
         isActive: false,
         children: [
             /* ... */
@@ -32,7 +32,7 @@ const navigation = [
     {
         name: "Rental Orders",
         icon: ShoppingBagIcon,
-        href: "#",
+        href: route("internal.rental-orders.index"),
         isActive: false,
         children: [
             /* ... */
@@ -41,16 +41,34 @@ const navigation = [
     {
         name: "User Management",
         icon: UsersIcon,
-        href: "#",
+        href: route("internal.user-management.index"),
         isActive: false,
         children: [
             /* ... */
         ],
     },
     {
-        name: "Reports",
+        name: "Revenue",
         icon: DocumentChartBarIcon,
-        href: "#",
+        href: route("internal.report.revenue"),
+        isActive: false,
+        children: [
+            /* ... */
+        ],
+    },
+    {
+        name: "Rental Analytics",
+        icon: DocumentChartBarIcon,
+        href: route("internal.report.rental-analytics"),
+        isActive: false,
+        children: [
+            /* ... */
+        ],
+    },
+    {
+        name: "Vehicle Statistics",
+        icon: DocumentChartBarIcon,
+        href: route("internal.report.vehicle"),
         isActive: false,
         children: [
             /* ... */

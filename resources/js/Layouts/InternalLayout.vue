@@ -49,12 +49,12 @@ const navigation = [
         name: 'Rental Orders',
         icon: ShoppingBagIcon,
         href: '#',
-        isActive: route().current('internal.rentals.*'),
+        isActive: route().current('internal.rental-orders.*'),
         children: [
             {
                 name: 'All Orders',
-                href: "#",
-                isActive: route().current('internal.rentals.index')
+                href: route('internal.rental-orders.index'),
+                isActive: route().current('internal.rental-orders.index')
             },
             {
                 name: 'Active Rentals',
@@ -63,7 +63,7 @@ const navigation = [
             },
             {
                 name: 'Pending Requests',
-                href: "#",
+                href: route('internal.rental-orders.index', { status: 'pending' }),
                 isActive: route().current('internal.rentals.pending')
             }
         ]
@@ -72,17 +72,17 @@ const navigation = [
         name: 'User Management',
         icon: UsersIcon,
         href: '#',
-        isActive: route().current('internal.users.*'),
+        isActive: route().current('internal.user-management.*'),
         children: [
             {
                 name: 'All Users',
-                href: "#",
-                isActive: route().current('internal.users.index')
+                href: route('internal.user-management.index'),
+                isActive: route().current('internal.user-management.index')
             },
             {
                 name: 'Add User',
-                href: "#",
-                isActive: route().current('internal.users.create')
+                href: route('internal.user-management.create'),
+                isActive: route().current('internal.user-management.create')
             },
             {
                 name: 'Roles & Permissions',
@@ -95,22 +95,22 @@ const navigation = [
         name: 'Reports',
         icon: DocumentChartBarIcon,
         href: '#',
-        isActive: route().current('internal.reports.*'),
+        isActive: route().current('internal.report.*'),
         children: [
             {
                 name: 'Revenue Reports',
-                href: "#",
-                isActive: route().current('internal.reports.revenue')
+                href: route('internal.report.revenue'),
+                isActive: route().current('internal.report.revenue')
             },
             {
                 name: 'Rental Analytics',
-                href: "#",
-                isActive: route().current('internal.reports.rentals')
+                href: route('internal.report.rental-analytics'),
+                isActive: route().current('internal.report.rental-analytics')
             },
             {
                 name: 'Vehicle Statistics',
-                href: "#",
-                isActive: route().current('internal.reports.vehicles')
+                href: route('internal.report.vehicle'),
+                isActive: route().current('internal.report.vehicle')
             },
             {
                 name: 'Customer Reports',

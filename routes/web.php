@@ -1,14 +1,18 @@
 <?php
 
+
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Customer\RentalController;
-use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
-use App\Http\Controllers\Internal\DashboardController;
+use App\Http\Controllers\Internal\ReportController;
 use App\Http\Controllers\Internal\VehicleController;
+use App\Http\Controllers\Internal\DashboardController;
+use App\Http\Controllers\Internal\UserManagementController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Internal\RentalOrderController as InternalRentalOrderController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -42,6 +46,13 @@ Route::prefix('customer')->middleware('auth')->name('customer.')->group(function
 Route::prefix('internal')->middleware('auth')->name('internal.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('vehicles', VehicleController::class);
+    Route::resource('rental-orders', InternalRentalOrderController::class);
+    Route::resource('user-management', UserManagementController::class);
+    Route::prefix('report')->as('report.')->group(function(){
+        Route::get('revenue', [ReportController::class, 'revenue'])->name('revenue');
+        Route::get('rental-analytics', [ReportController::class, 'rentalAnalytic'])->name('rental-analytics');
+        Route::get('vehicle', [ReportController::class, 'vehicle'])->name('vehicle');
+    });
 });
 
 Route::middleware('auth')->group(function () {

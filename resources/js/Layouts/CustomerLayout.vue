@@ -12,6 +12,9 @@ import {
 } from '@heroicons/vue/24/outline';
 import Flash from '@/Components/Flash.vue';
 
+import { usePage } from '@inertiajs/vue3';
+
+const auth = usePage().props.auth;
 const navigation = [
     {
         name: 'Dashboard',
@@ -91,8 +94,8 @@ const navigation = [
 ];
 
 const user = {
-    name: 'John Doe',
-    avatar: 'https://ui-avatars.com/api/?name=John+Doe'
+    name: auth.user.name,
+    avatar: `https://ui-avatars.com/api/?name=${auth.user.name}&background=random&size=128`,
 };
 
 
