@@ -47,43 +47,54 @@ const navigation = [
         href: "#",
         isActive: route().current('customer.payments.*'),
         children: [
+
+            {
+                name: 'Add Payment',
+                href: route('customer.payments.create'),
+                isActive: route().current('customer.payments.create')
+            },
+
             {
                 name: 'Payment History',
-                href: "#",
+                href: route('customer.payments.history'),
                 isActive: route().current('customer.payments.history')
             },
             {
                 name: 'Pending Payments',
-                href: '#',
-                isActive: route().current('customer.payments.pending')
+                href: route('customer.payments.history', {
+                    status: "pending"
+                }),
+                isActive: route().current('customer.payments.history', {
+                    status: "pending"
+                })
             }
         ]
     },
-    {
-        name: 'Documents',
-        icon: DocumentTextIcon,
-        href: "#",
-        isActive: route().current('customer.documents.*'),
-        children: [
-            {
-                name: 'Rental Agreements',
-                href: "#",
-                isActive: route().current('customer.documents.agreements')
-            },
-            {
-                name: 'Receipts',
-                href: '#',
-                isActive: route().current('customer.documents.receipts')
-            }
-        ]
-    },
-    {
-        name: 'Support',
-        icon: ChatBubbleLeftRightIcon,
-        href: "#",
-        isActive: route().current('customer.support'),
-        children: []
-    },
+    // {
+    //     name: 'Documents',
+    //     icon: DocumentTextIcon,
+    //     href: "#",
+    //     isActive: route().current('customer.documents.*'),
+    //     children: [
+    //         {
+    //             name: 'Rental Agreements',
+    //             href: "#",
+    //             isActive: route().current('customer.documents.agreements')
+    //         },
+    //         {
+    //             name: 'Receipts',
+    //             href: '#',
+    //             isActive: route().current('customer.documents.receipts')
+    //         }
+    //     ]
+    // },
+    // {
+    //     name: 'Support',
+    //     icon: ChatBubbleLeftRightIcon,
+    //     href: "#",
+    //     isActive: route().current('customer.support'),
+    //     children: []
+    // },
     {
         name: 'Profile',
         icon: UserCircleIcon,
@@ -110,7 +121,7 @@ const user = {
 
 
             <div class="flex-1 flex flex-col">
-                <Navbar  :user="user" :links="navigationLinks"/>
+                <Navbar :user="user" :links="navigationLinks" />
 
                 <main class="flex-1 p-6">
                     <slot></slot>

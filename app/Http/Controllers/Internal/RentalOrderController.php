@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Internal;
 
-use Inertia\Inertia;
 use App\Models\User;
+use Inertia\Inertia;
+use App\Actions\GenerateSequence;
 use App\Models\Vehicle;
 use App\Models\RentalOrder;
 use Illuminate\Http\Request;
@@ -14,6 +15,10 @@ class RentalOrderController extends Controller
     /**
      * Display a listing of the resource.
      */
+     public function __contruct( GenerateSequence $generateSequence)
+    {
+
+    }
     public function index(Request $request)
     {
         $query = RentalOrder::with(['user.profile', 'vehicle']);
@@ -90,6 +95,10 @@ class RentalOrderController extends Controller
             'total_amount' => $total_amount,
             'status' => $request->status,
             'notes' => $request->notes
+        ]);
+
+        $rentalOrder->update([
+            'ref_number' => GenerateSequence::generateRefNumber('RENT', 6, $rentalOrder->id)
         ]);
 
         // Update vehicle status
@@ -203,5 +212,19 @@ class RentalOrderController extends Controller
 
         return redirect()->route('internal.rental-orders.index')
             ->with('success', 'Rental order deleted successfully');
+    }
+
+    /**
+     * Display a listing of active rentals.
+     */
+    public function activeRentals()
+    {
+        $activeRentals = RentalOrder::with(['user.profile', 'vehicle'])
+            ->where('status', 'active')
+            ->get();
+
+        return Inertia::render('Internal/RentalOrder/ActiveRentalOrder', [
+            'activeRentals' => $activeRentals
+        ]);
     }
 }

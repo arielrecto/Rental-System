@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\User;
-use App\Models\Vehicle;
+use App\Models\PaymentAccount;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -13,16 +13,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rental_orders', function (Blueprint $table) {
+        Schema::create('payments', function (Blueprint $table) {
             $table->id();
+            $table->string('memo')->nullable();
             $table->string('ref_number')->nullable()->unique();
-            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Vehicle::class)->constrained()->cascadeOnDelete();
-            $table->date('rental_date');
-            $table->date('return_date');
-            $table->decimal('total_amount', 10, 2);
+            $table->string('total_amount');
+            $table->morphs('payable');
             $table->string('status')->default('pending');
-            $table->longText('notes')->nullable();
+            $table->foreignIdFor(User::class, 'paid_by')->constraind('users')->cascadeOnDelete();
+            $table->foreignIdFor(PaymentAccount::class)->constraind()->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rental_orders');
+        Schema::dropIfExists('payments');
     }
 };

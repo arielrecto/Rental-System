@@ -7,6 +7,7 @@ import {
     TruckIcon,
     ClipboardDocumentListIcon,
     ChartBarIcon,
+    CreditCardIcon,
     WrenchScrewdriverIcon,
     ShoppingBagIcon,
     DocumentChartBarIcon,
@@ -58,13 +59,49 @@ const navigation = [
             },
             {
                 name: 'Active Rentals',
-                href: "#",
+                href: route('internal.rental-orders.active'),
                 isActive: route().current('internal.rentals.active')
             },
             {
                 name: 'Pending Requests',
                 href: route('internal.rental-orders.index', { status: 'pending' }),
                 isActive: route().current('internal.rentals.pending')
+            }
+        ]
+    },
+    {
+        name: 'Payment',
+        icon: CreditCardIcon,
+        href: "#",
+        isActive: route().current('internal.payments.*'),
+        children: [
+            {
+                name: 'All Payments',
+                href: route('internal.payments.index'),
+                isActive: route().current('internal.payments.index')
+            },
+            {
+                name: 'Add Payment',
+                href: route('internal.payments.create'),
+                isActive: route().current('internal.payments.create')
+            }
+        ]
+    },
+    {
+        name: 'Payment Accounts',
+        icon: CreditCardIcon,
+        href: "#",
+        isActive: route().current('internal.payment-accounts.*'),
+        children: [
+            {
+                name: 'All Payment Accounts',
+                href: route('internal.payment-accounts.index'),
+                isActive: route().current('internal.payment-accounts.index')
+            },
+            {
+                name: 'Add Payment Account',
+                href: route('internal.payment-accounts.create'),
+                isActive: route().current('internal.payment-accounts.create')
             }
         ]
     },

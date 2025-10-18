@@ -5,13 +5,18 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KioskController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Customer\RentalController;
 use App\Http\Controllers\Internal\ReportController;
+use App\Http\Controllers\Internal\PaymentController;
 use App\Http\Controllers\Internal\VehicleController;
 use App\Http\Controllers\Internal\DashboardController;
+use App\Http\Controllers\Internal\RentalOrderController;
+use App\Http\Controllers\Internal\PaymentAcountController;
 use App\Http\Controllers\Internal\UserManagementController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController;
 use App\Http\Controllers\Internal\RentalOrderController as InternalRentalOrderController;
 
 Route::get('/', function () {
@@ -39,6 +44,14 @@ Route::prefix('customer')->middleware('auth')->name('customer.')->group(function
         Route::post('/{id}', [RentalController::class, 'cancel'])->name('cancel');
     });
 
+    Route::prefix('payments')->as('payments.')->group(function(){
+        Route::get('create', [CustomerPaymentController::class, 'create'])->name('create');
+        Route::get('history', [CustomerPaymentController::class, 'history'])->name('history');
+        Route::get('edit/{id}', [CustomerPaymentController::class, 'edit'])->name('edit');
+        Route::put('update/{id}', [CustomerPaymentController::class, 'update'])->name('update');
+        Route::delete('delete/{id}', [CustomerPaymentController::class, 'destroy'])->name('delete');
+    });
+
     Route::get('dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
 });
 
@@ -46,6 +59,9 @@ Route::prefix('customer')->middleware('auth')->name('customer.')->group(function
 Route::prefix('internal')->middleware('auth')->name('internal.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('vehicles', VehicleController::class);
+    Route::prefix('rental-orders')->as('rental-orders.')->group(function(){
+        Route::get('active', [RentalOrderController::class, 'activeRentals'])->name('active');
+    });
     Route::resource('rental-orders', InternalRentalOrderController::class);
     Route::resource('user-management', UserManagementController::class);
     Route::prefix('report')->as('report.')->group(function(){
@@ -53,6 +69,14 @@ Route::prefix('internal')->middleware('auth')->name('internal.')->group(function
         Route::get('rental-analytics', [ReportController::class, 'rentalAnalytic'])->name('rental-analytics');
         Route::get('vehicle', [ReportController::class, 'vehicle'])->name('vehicle');
     });
+
+    Route::resource('payment-accounts', PaymentAcountController::class);
+    Route::resource('payments', PaymentController::class);
+});
+
+
+Route::prefix('kiosk')->as('kiosk.')->group(function(){
+    Route::get('', [KioskController::class, 'index'])->name('index');
 });
 
 Route::middleware('auth')->group(function () {

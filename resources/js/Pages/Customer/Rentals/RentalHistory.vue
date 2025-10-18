@@ -18,7 +18,7 @@ console.log(props.rentalOrders);
 
 // Table headers configuration
 const headers = [
-    { key: "id", label: "Order ID" },
+    { key: "ref_number", label: "Order ID" },
     { key: "vehicle", label: "Vehicle" },
     { key: "start_date", label: "Start Date" },
     { key: "end_date", label: "End Date" },
@@ -193,7 +193,7 @@ const viewDetailAction = (rentalOrder) => {
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
                             >
-                                {{ item.id }}
+                                {{ item.ref_number }}
                             </td>
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
@@ -243,6 +243,13 @@ const viewDetailAction = (rentalOrder) => {
                                     View Details
                                 </button>
 
+                                <Link v-if="item.status !== 'paid'" :href="route('customer.payments.create', {
+                                    orderId : item.id,
+                                    payableType : 'App\\Models\\RentalOrder'
+                                })" class="text-green-500 hover:text-green-800 font-medium ml-4">
+                                   Add Payment
+                                </Link>
+
                                 <Link
                                     v-if="item.status === 'pending'"
                                     :href="
@@ -275,13 +282,17 @@ const viewDetailAction = (rentalOrder) => {
                     </template>
 
                     <template #default>
-                        <div class="space-y-4 flex-1">
+                        <div class="flex items-center justify-end py-2 border-b border-gray-200">
+                            <h1 class="text-lg font-bold text-red-500">{{ selectedRentalOrder?.ref_number }}</h1>
+                        </div>
+
+                        <div class="space-y-4 flex-1 mt-5">
                             <div class="grid grid-cols-2 gap-2">
                                 <h1 class="text-gray-600">Start Date</h1>
                                 <p>
                                     {{ selectedRentalOrder?.rental_date }}
                                 </p>
-                                <h1 class="text-gray-600">end Date</h1>
+                                <h1 class="text-gray-600">End Date</h1>
                                 <p>
                                     {{ selectedRentalOrder?.return_date }}
                                 </p>
@@ -299,7 +310,10 @@ const viewDetailAction = (rentalOrder) => {
                                     v-for="file in selectedRentalOrder.attachments"
                                     :key="file.id"
                                 >
-                                    <Attachment :filePath="file.file_path" :fileExtension="file.file_extension" />
+                                    <Attachment
+                                        :filePath="file.file_path"
+                                        :fileExtension="file.file_extension"
+                                    />
                                 </div>
                             </div>
                             <div class="flex items-center justify-between">

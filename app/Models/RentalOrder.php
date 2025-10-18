@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RentalOrder extends Model
 {
     protected $fillable = [
+        'ref_number',
         'user_id',
         'vehicle_id',
         'rental_date',
@@ -35,5 +36,9 @@ class RentalOrder extends Model
 
     public function attachments(){
         return $this->morphMany(Attachment::class, 'attachable');
+    }
+
+    public function payments(){
+        return $this->morphMany(Payment::class, 'payable');
     }
 }

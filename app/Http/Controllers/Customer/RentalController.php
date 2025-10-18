@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Actions\GenerateSequence;
 use Carbon\Carbon;
 use Inertia\Inertia;
 use App\Models\Vehicle;
@@ -16,6 +17,12 @@ use Illuminate\Support\Facades\Storage;
 
 class RentalController extends Controller
 {
+
+
+    public function __contruct( GenerateSequence $generateSequence)
+    {
+
+    }
     public function index()
     {
 
@@ -53,6 +60,10 @@ class RentalController extends Controller
             'total_amount' => $vehicle->rental_rate *  $totalDays,
             'status' => 'pending',
             'notes' => $request->notes
+        ]);
+
+        $rentalOrder->update([
+            'ref_number' => GenerateSequence::generateRefNumber('RENT', 6, $rentalOrder->id)
         ]);
 
         // Handle file uploads
