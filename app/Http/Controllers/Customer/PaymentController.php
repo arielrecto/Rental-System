@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Customer;
 
 use Inertia\Inertia;
+use App\Actions\GenerateSequence;
 use App\Models\Payment;
 use App\Models\RentalOrder;
 use Illuminate\Http\Request;
 use App\Models\PaymentAccount;
 use App\Http\Controllers\Controller;
+use App\Actions\UpdateStatusModelPayable;
 
 class PaymentController extends Controller
 {
@@ -87,9 +89,45 @@ class PaymentController extends Controller
 
         $payment->update($validated);
 
-        return redirect()->route('internal.payments.index')
+        return redirect()->route('customer.payments.history')
             ->with('success', 'Payment updated successfully');
     }
+
+     public function store(Request $request)
+    {
+
+        $validated = $request->validate([
+            'payment_account_id' => 'required|exists:payment_accounts,id',
+            'total_amount' => 'required|numeric|min:0',
+            'memo' => 'nullable|string',
+            'status' => 'required|in:pending,completed,failed,refunded',
+            'payable_id' => 'required|integer',
+            'payable_type' => 'required|string',
+            'paid_by' => 'required|integer|exists:users,id'
+        ]);
+
+
+        $payment = Payment::create($validated);
+
+        $payment->update([
+            'ref_number' => GenerateSequence::generateRefNumber('PAY', 6, $payment->id)
+        ]);
+
+
+
+
+            UpdateStatusModelPayable::execute(
+                $validated['payable_type'],
+                $validated['payable_id'],
+                'In Payment'
+            );
+
+
+
+        return redirect()->route('customer.payments.history')
+            ->with('success', 'Payment created successfully');
+    }
+
 
     private function getPayableItems()
     {

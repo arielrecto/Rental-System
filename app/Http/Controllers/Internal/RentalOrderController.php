@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Internal;
 
 use App\Models\User;
 use Inertia\Inertia;
-use App\Actions\GenerateSequence;
 use App\Models\Vehicle;
 use App\Models\RentalOrder;
 use Illuminate\Http\Request;
+use App\Actions\GenerateSequence;
 use App\Http\Controllers\Controller;
+use App\Models\RentalVehicleSession;
 
 class RentalOrderController extends Controller
 {
@@ -113,8 +114,12 @@ class RentalOrderController extends Controller
      */
     public function show(string $id)
     {
-        $rentalOrder = RentalOrder::with(['user.profile', 'vehicle', 'attachments'])
+        $rentalOrder = RentalOrder::with(['user.profile', 'vehicle', 'attachments', 'rentalVehicleSessions'])
             ->findOrFail($id);
+
+
+
+
 
         return Inertia::render('Internal/RentalOrder/RentalOrderShow', [
             'rentalOrder' => $rentalOrder
@@ -219,12 +224,39 @@ class RentalOrderController extends Controller
      */
     public function activeRentals()
     {
-        $activeRentals = RentalOrder::with(['user.profile', 'vehicle'])
-            ->where('status', 'active')
-            ->get();
+       $activeRentals = RentalVehicleSession::with([
+            'vehicle',
+            'rentalOrder.user',
+            'vehicleSessionLocations' => function($query) {
+                $query->latest()->limit(1);
+            }
+        ])
+        ->where('status', 'active')
+        ->get()
+        ->map(function($session) {
+            return [
+                'id' => $session->id,
+                'session_token' => $session->session_token,
+                'status' => $session->status,
+                'started_at' => $session->started_at,
+                'vehicle' => [
+                    'brand' => $session->vehicle->brand,
+                    'model' => $session->vehicle->model,
+                    'plate_no' => $session->vehicle->plate_no
+                ],
+                'rental_order' => [
+                    'user' => [
+                        'name' => $session->rentalOrder->user->name
+                    ]
+                ],
+                'latest_location' => $session->vehicleSessionLocations->first()
+            ];
+        });
 
         return Inertia::render('Internal/RentalOrder/ActiveRentalOrder', [
             'activeRentals' => $activeRentals
         ]);
     }
+
+
 }

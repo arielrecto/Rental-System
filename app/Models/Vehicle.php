@@ -27,6 +27,8 @@ class Vehicle extends Model
 
 
 
+
+
     public function asset()
     {
         return $this->morphOne(Asset::class, 'assetable');
@@ -34,5 +36,24 @@ class Vehicle extends Model
 
     public function image(){
         return $this->morphOne(Attachment::class, 'attachable');
+    }
+
+    public function rentalVehicleSessions(){
+        return $this->hasMany(RentalVehicleSession::class);
+    }
+
+    public function name(){
+        return $this->brand . ' - ' . $this->model;
+    }
+
+    public function vehicleSessionLocations()
+    {
+        return $this->hasMany(VehicleSessionLocation::class);
+    }
+
+
+    public function maintainanceRequests()
+    {
+        return $this->hasMany(MaintainanceVehicleRequest::class);
     }
 }

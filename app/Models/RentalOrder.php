@@ -41,4 +41,8 @@ class RentalOrder extends Model
     public function payments(){
         return $this->morphMany(Payment::class, 'payable');
     }
+
+    public function rentalVehicleSessions(){
+        return $this->hasMany(RentalVehicleSession::class);
+    }
 }

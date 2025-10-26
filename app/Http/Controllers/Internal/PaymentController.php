@@ -135,6 +135,14 @@ class PaymentController extends Controller
 
         $payment->update($validated);
 
+         if($request->status === 'completed') {
+            UpdateStatusModelPayable::execute(
+                $payment->payable_type,
+                $payment->payable_id,
+                'paid'
+            );
+        }
+
         return redirect()->route('internal.payments.index')
             ->with('success', 'Payment updated successfully');
     }

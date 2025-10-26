@@ -78,18 +78,12 @@ class UserManagementController extends Controller
     public function update(Request $request, string $id)
     {
         $user = User::findOrFail($id);
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
-            'phone' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'password' => $request->password ? ['required', 'confirmed', Password::defaults()] : '',
-        ]);
+     
 
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+            'pin' => $request->pin
         ]);
 
         if ($request->password) {
@@ -98,12 +92,15 @@ class UserManagementController extends Controller
             ]);
         }
 
-        $user->profile->update([
-            'phone' => $request->phone,
-            'address' => $request->address,
-        ]);
 
-        return redirect()->route('internal.users.index')
+        if($user->profile){
+            $user->profile->update([
+                'phone' => $request->phone,
+                'address' => $request->address,
+            ]);
+        }
+
+        return back()
             ->with('success', 'User updated successfully');
     }
 

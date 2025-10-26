@@ -66,7 +66,7 @@ const selectPayable = (item) => {
 };
 
 const submit = () => {
-    router.post(route('internal.payments.store'), form.value, {
+    router.post(route('customer.payments.store'), form.value, {
         onSuccess: () => {
             form.value = {
                 payment_account_id: '',
@@ -88,7 +88,7 @@ const submit = () => {
 
 const selectPayableById = (id, type) => {
 
-    
+
     const payable = props.payableItems?.rental_orders?.find(item => item.id == id && item.type == type);
 
     console.log(payable, 'payable');

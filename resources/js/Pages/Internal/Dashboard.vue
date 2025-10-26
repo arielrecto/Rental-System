@@ -7,6 +7,8 @@ import {
     UsersIcon,
     DocumentChartBarIcon,
     WrenchScrewdriverIcon,
+    CreditCardIcon,
+    DeviceTabletIcon
 } from "@heroicons/vue/24/outline";
 import InternalLayout from "@/Layouts/InternalLayout.vue";
 import { Link } from "@inertiajs/vue3";
@@ -75,9 +77,37 @@ const navigation = [
         ],
     },
     {
+        name: "Payments",
+        icon: CreditCardIcon,
+        href: route('internal.payments.index'),
+        isActive: false,
+        children: [
+            /* ... */
+        ],
+    },
+     {
+        name: "Payment Account",
+        icon: CreditCardIcon,
+        href: route('internal.payment-accounts.index'),
+        isActive: false,
+        children: [
+            /* ... */
+        ],
+    },
+
+    {
+        name: "Kiosk",
+        icon: DeviceTabletIcon,
+        href: route('kiosk.index'),
+        isActive: false,
+        children: [
+            /* ... */
+        ],
+    },
+    {
         name: "Maintenance",
         icon: WrenchScrewdriverIcon,
-        href: "#",
+        href: route('internal.maintenance.index'),
         isActive: false,
         children: [
             /* ... */

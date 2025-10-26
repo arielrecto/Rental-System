@@ -11,6 +11,7 @@ import {
     WrenchScrewdriverIcon,
     ShoppingBagIcon,
     DocumentChartBarIcon,
+    DeviceTabletIcon
 } from '@heroicons/vue/24/outline';
 import Flash from '@/Components/Flash.vue';
 import { usePage } from '@inertiajs/vue3';
@@ -106,6 +107,15 @@ const navigation = [
         ]
     },
     {
+        name: 'Kiosk',
+        icon: DeviceTabletIcon,
+        href: route('kiosk.index'),
+        isActive: route().current('kiosk.*'),
+        children: [
+
+        ]
+    },
+    {
         name: 'User Management',
         icon: UsersIcon,
         href: '#',
@@ -163,20 +173,15 @@ const navigation = [
         isActive: route().current('internal.maintenance.*'),
         children: [
             {
-                name: 'Schedule',
-                href: "#",
-                isActive: route().current('internal.maintenance.schedule')
+                name: 'List Maintenance',
+                href: route('internal.maintenance.index'),
+                isActive: route().current('internal.maintenance.index')
             },
             {
-                name: 'History',
-                href: "#",
-                isActive: route().current('internal.maintenance.history')
+                name: 'Add Maintenance Request',
+                href: route('internal.maintenance.create'),
+                isActive: route().current('internal.maintenance.create')
             },
-            {
-                name: 'Service Records',
-                href:"#",
-                isActive: route().current('internal.maintenance.records')
-            }
         ]
     }
 ];
