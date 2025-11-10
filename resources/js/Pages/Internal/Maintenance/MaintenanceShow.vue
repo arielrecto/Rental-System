@@ -1,30 +1,30 @@
 <script setup>
-import { computed } from 'vue';
-import InternalLayout from '@/Layouts/InternalLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { computed } from "vue";
+import InternalLayout from "@/Layouts/InternalLayout.vue";
+import { Head, Link } from "@inertiajs/vue3";
 import {
     CalendarIcon,
     CurrencyDollarIcon,
     ClipboardDocumentCheckIcon,
-    TruckIcon
-} from '@heroicons/vue/24/outline';
+    TruckIcon,
+} from "@heroicons/vue/24/outline";
 
 const props = defineProps({
-    request: Object
+    request: Object,
 });
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP'
+    return new Intl.NumberFormat("en-PH", {
+        style: "currency",
+        currency: "PHP",
     }).format(amount);
 };
 
 const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-PH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+    return new Date(date).toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
     });
 };
 </script>
@@ -45,8 +45,27 @@ const formatDate = (date) => {
                         </p>
                     </div>
                     <div class="flex space-x-3">
+
+                        <!-- <Link
+                            :href="
+                                route('internal.maintenance.mark-as-on-going', request.id)
+                            "
+                            class="inline-flex items-center px-4 py-2 bg-blue-500 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-600  "
+                        >
+                            On Going
+                        </Link> -->
                         <Link
-                            :href="route('internal.maintenance.edit', request.id)"
+                            :href="
+                                route('internal.maintenance.mark-as-completed', request.id)
+                            "
+                            class="inline-flex items-center px-4 py-2 bg-green-500 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-600  "
+                        >
+                            Done
+                        </Link>
+                        <Link
+                            :href="
+                                route('internal.maintenance.edit', request.id)
+                            "
                             class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                         >
                             Edit Request
@@ -69,7 +88,7 @@ const formatDate = (date) => {
                                     'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
                                     request.is_completed
                                         ? 'bg-green-100 text-green-800'
-                                        : 'bg-yellow-100 text-yellow-800'
+                                        : 'bg-yellow-100 text-yellow-800',
                                 ]"
                             >
                                 {{ request.status }}
@@ -82,7 +101,11 @@ const formatDate = (date) => {
                             <div class="flex items-start space-x-3">
                                 <TruckIcon class="h-6 w-6 text-gray-400" />
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Vehicle</h3>
+                                    <h3
+                                        class="text-sm font-medium text-gray-900"
+                                    >
+                                        Vehicle
+                                    </h3>
                                     <p class="mt-1 text-sm text-gray-600">
                                         {{ request.vehicle.name }}
                                     </p>
@@ -96,21 +119,37 @@ const formatDate = (date) => {
                             <div class="flex items-start space-x-3">
                                 <CalendarIcon class="h-6 w-6 text-gray-400" />
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Dates</h3>
+                                    <h3
+                                        class="text-sm font-medium text-gray-900"
+                                    >
+                                        Dates
+                                    </h3>
                                     <p class="mt-1 text-sm text-gray-600">
-                                        Requested: {{ formatDate(request.requested_date) }}
+                                        Requested:
+                                        {{ formatDate(request.requested_date) }}
                                     </p>
                                     <p class="text-sm text-gray-600">
-                                        Maintenance: {{ formatDate(request.maintainance_date) }}
+                                        Maintenance:
+                                        {{
+                                            formatDate(
+                                                request.maintainance_date
+                                            )
+                                        }}
                                     </p>
                                 </div>
                             </div>
 
                             <!-- Cost -->
                             <div class="flex items-start space-x-3">
-                                <CurrencyDollarIcon class="h-6 w-6 text-gray-400" />
+                                <CurrencyDollarIcon
+                                    class="h-6 w-6 text-gray-400"
+                                />
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Cost</h3>
+                                    <h3
+                                        class="text-sm font-medium text-gray-900"
+                                    >
+                                        Cost
+                                    </h3>
                                     <p class="mt-1 text-sm text-gray-600">
                                         {{ formatCurrency(request.cost) }}
                                     </p>
@@ -121,9 +160,15 @@ const formatDate = (date) => {
                         <!-- Description -->
                         <div class="mt-6">
                             <div class="flex items-start space-x-3">
-                                <ClipboardDocumentCheckIcon class="h-6 w-6 text-gray-400" />
+                                <ClipboardDocumentCheckIcon
+                                    class="h-6 w-6 text-gray-400"
+                                />
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Description</h3>
+                                    <h3
+                                        class="text-sm font-medium text-gray-900"
+                                    >
+                                        Description
+                                    </h3>
                                     <p class="mt-1 text-sm text-gray-600">
                                         {{ request.description }}
                                     </p>

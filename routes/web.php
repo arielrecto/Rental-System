@@ -72,6 +72,12 @@ Route::prefix('internal')->middleware('auth')->name('internal.')->group(function
         Route::get('vehicle', [ReportController::class, 'vehicle'])->name('vehicle');
     });
 
+
+    Route::prefix('maintenance')->as('maintenance.')->group(function () {
+        Route::get('mark-as-completed/{id}', [MaintenanceVehicleRequestController::class, 'markAsCompleted'])->name('mark-as-completed');
+        Route::get('mark-as-on-going/{id}', [MaintenanceVehicleRequestController::class, 'markAsOnGoing'])->name('mark-as-on-going');
+    });
+
     Route::resource('payment-accounts', PaymentAcountController::class);
     Route::resource('payments', PaymentController::class);
     Route::resource('maintenance', MaintenanceVehicleRequestController::class);

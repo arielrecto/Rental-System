@@ -138,4 +138,32 @@ class MaintenanceVehicleRequestController extends Controller
         return redirect()->route('maintenance.index')
             ->with('success', 'Maintenance request deleted successfully.');
     }
+
+    public function markAsCompleted($id)
+    {
+        $maintenance = MaintainanceVehicleRequest::findOrFail($id);
+        $maintenance->is_completed = true;
+        $maintenance->save();
+
+        $vehicle = Vehicle::find($maintenance->vehicle_id);
+        $vehicle->status = 'available';
+        $vehicle->save();
+
+        return redirect()->route('internal.maintenance.index')
+            ->with('success', 'Maintenance request marked as completed.');
+    }
+
+    public function markAsOnGoing($id)
+    {
+        $maintenance = MaintainanceVehicleRequest::findOrFail($id);
+        $maintenance->is_completed = true;
+        $maintenance->save();
+
+        $vehicle = Vehicle::find($maintenance->vehicle_id);
+        $vehicle->status = 'maintenance';
+        $vehicle->save();
+
+        return redirect()->route('internal.maintenance.index')
+            ->with('success', 'Maintenance request marked as On Going.');
+    }
 }
