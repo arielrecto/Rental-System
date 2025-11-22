@@ -26,6 +26,8 @@ class VehicleController extends Controller
 
     public function store(Request $request)
     {
+
+
         $request->validate([
             'brand' => 'required|string|max:255',
             'model' => 'required|string|max:255',
@@ -34,7 +36,9 @@ class VehicleController extends Controller
             'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'mileage' => 'required|numeric|min:0',
             'rental_rate' => 'required|numeric|min:0',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240'
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
+            'purchase_cost' => 'nullable|numeric|min:0',
+            'purchase_date' => 'nullable|date',
         ]);
 
         $vehicle = Vehicle::create($request->except('image'));

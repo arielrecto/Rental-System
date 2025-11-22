@@ -22,6 +22,8 @@ class Vehicle extends Model
         'mileage',
         'condition',
         'rental_rate',
+        'purchase_cost',
+        'purchase_date',
         'status',
     ];
 

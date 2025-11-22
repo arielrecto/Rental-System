@@ -159,11 +159,11 @@ const navigation = [
                 href: route('internal.report.vehicle'),
                 isActive: route().current('internal.report.vehicle')
             },
-            {
-                name: 'Customer Reports',
-                href: "#",
-                isActive: route().current('internal.reports.customers')
-            }
+            // {
+            //     name: 'Customer Reports',
+            //     href: "#",
+            //     isActive: route().current('internal.reports.customers')
+            // }
         ]
     },
     {
@@ -205,7 +205,7 @@ const user = {
 
 
             <div class="flex-1 flex flex-col">
-                <Navbar  :user="user" :links="navigationLinks"/>
+                <Navbar  :user="user" />
 
                 <main class="flex-1 p-6">
                     <slot></slot>

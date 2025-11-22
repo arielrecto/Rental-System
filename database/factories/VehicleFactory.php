@@ -33,6 +33,8 @@ class VehicleFactory extends Factory
             'mileage' => fake()->numberBetween(1, 999999),
             'condition' => fake()->randomElement(['New', 'Used', 'Excellent', 'Good', 'Fair']),
             'status' => fake()->randomElement(['Available', 'Rented', 'Under Maintenance']), // The status() method does not exist
+            'purchase_cost' => fake()->numberBetween(500, 50000),
+            'purchase_date' => fake()->date(),
         ];
     }
 }

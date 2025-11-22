@@ -1,72 +1,145 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { toRefs, ref, computed, watch, nextTick } from 'vue';
 import InternalLayout from '@/Layouts/InternalLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import BarChart from '@/Components/Charts/BarChart.vue';
 import LineChart from '@/Components/Charts/LineChart.vue';
 import PieChart from '@/Components/Charts/PieChart.vue';
 
-// Rental Frequency by Vehicle Type
-const rentalFrequencyData = {
-    labels: ['Sport Bike', 'Cruiser', 'Touring', 'Standard', 'Dual Sport', 'Scooter'],
-    datasets: [{
-        label: 'Number of Rentals',
-        data: [150, 120, 80, 95, 60, 45],
-        backgroundColor: [
-            'rgba(239, 68, 68, 0.6)',
-            'rgba(59, 130, 246, 0.6)',
-            'rgba(16, 185, 129, 0.6)',
-            'rgba(251, 191, 36, 0.6)',
-            'rgba(139, 92, 246, 0.6)',
-            'rgba(236, 72, 153, 0.6)'
-        ]
-    }]
+const props = defineProps({
+    analytics: {
+        type: Object,
+        required: true
+    }
+});
+
+const { analytics: a } = toRefs(props);
+
+// keep selectedYear in sync with incoming analytics
+const selectedYear = ref(a.value?.selectedYear || new Date().getFullYear());
+
+// editable state for year control
+const isEditingYear = ref(false);
+const yearInput = ref(selectedYear.value);
+const yearInputRef = ref(null);
+
+// keep selectedYear updated if props.analytics changes
+watch(() => a.value?.selectedYear, (v) => {
+    if (v) {
+        selectedYear.value = v;
+        if (!isEditingYear.value) yearInput.value = v;
+    }
+});
+
+// build a small range of years for filter (selectedYear down to -4)
+const years = computed(() => {
+    const y = Number(selectedYear.value) || new Date().getFullYear();
+    const out = [];
+    for (let i = 0; i < 6; i++) out.push(y - i);
+    return out;
+});
+
+const onYearChange = () => {
+    // keep route name you use in web.php. This matches the existing page route.
+    router.get(route('internal.report.rental-analytics'), { year: selectedYear.value }, { preserveState: true, replace: true });
 };
 
-// Monthly Rental Trends
-const monthlyRentalData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [{
-        label: 'Number of Rentals 2023',
-        data: [45, 52, 49, 60, 55, 65, 70, 68, 72, 75, 80, 85],
-        backgroundColor: 'rgba(239, 68, 68, 0.5)',
-        borderColor: 'rgba(239, 68, 68, 1)',
-        borderWidth: 1
-    }]
+const startEditYear = async () => {
+    isEditingYear.value = true;
+    yearInput.value = selectedYear.value;
+    await nextTick();
+    if (yearInputRef.value && yearInputRef.value.focus) {
+        yearInputRef.value.focus();
+        yearInputRef.value.select();
+    }
 };
 
-// Daily Rental Distribution
-const dailyRentalData = {
-    labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    datasets: [{
-        label: 'Average Daily Rentals',
-        data: [15, 18, 20, 22, 35, 45, 40],
-        fill: false,
-        borderColor: 'rgba(239, 68, 68, 1)',
-        tension: 0.1
-    }]
+const cancelEdit = () => {
+    isEditingYear.value = false;
+    yearInput.value = selectedYear.value;
 };
 
-// Vehicle Performance Data
-const topVehicles = [
-    { model: 'Ninja ZX-10R', type: 'Sport Bike', rentals: 150, utilization: '85%' },
-    { model: 'Gold Wing', type: 'Touring', rentals: 120, utilization: '80%' },
-    { model: 'MT-07', type: 'Standard', rentals: 110, utilization: '75%' },
-    { model: 'Rebel 500', type: 'Cruiser', rentals: 105, utilization: '72%' },
-    { model: 'Africa Twin', type: 'Dual Sport', rentals: 95, utilization: '70%' }
-];
+const saveYear = () => {
+    const parsed = parseInt(yearInput.value, 10);
+    const currentYear = new Date().getFullYear();
+    if (isNaN(parsed) || parsed < 1900 || parsed > currentYear + 5) {
+        // invalid -> revert and close edit
+        yearInput.value = selectedYear.value;
+        isEditingYear.value = false;
+        return;
+    }
+    selectedYear.value = parsed;
+    isEditingYear.value = false;
+    onYearChange();
+};
 
-const lowPerformingVehicles = [
-    { model: 'Vespa Primavera', type: 'Scooter', rentals: 30, utilization: '25%' },
-    { model: 'PCX150', type: 'Scooter', rentals: 35, utilization: '30%' },
-    { model: 'KLR650', type: 'Dual Sport', rentals: 40, utilization: '35%' }
-];
+// make all chart payloads and metrics reactive — computed so they update when props.analytics changes
+const metrics = computed(() => {
+    const m = a.value?.metrics || {};
+    return {
+        totalRentals: m.totalRentals ?? 0,
+        averageRentalDuration: m.averageRentalDuration ?? 0,
+        peakUtilization: m.peakUtilization ?? '0%',
+        popularDays: m.popularDays ?? 'N/A'
+    };
+});
 
-const metrics = {
-    totalRentals: 776,
-    averageRentalDuration: 3.5,
-    peakUtilization: '85%',
-    popularDays: 'Weekends'
+const rentalFrequencyData = computed(() => {
+    const rf = a.value?.rentalFrequency || { labels: [], data: [] };
+    return {
+        labels: rf.labels || [],
+        datasets: [{
+            label: 'Number of Rentals',
+            data: rf.data || [],
+            backgroundColor: [
+                'rgba(239, 68, 68, 0.6)',
+                'rgba(59, 130, 246, 0.6)',
+                'rgba(16, 185, 129, 0.6)',
+                'rgba(251, 191, 36, 0.6)',
+                'rgba(139, 92, 246, 0.6)',
+                'rgba(236, 72, 153, 0.6)'
+            ]
+        }]
+    };
+});
+
+const monthlyRentalData = computed(() => {
+    const mon = a.value?.monthly || { labels: [], data: [] };
+    return {
+        labels: mon.labels || [],
+        datasets: [{
+            label: `Number of Rentals ${selectedYear.value}`,
+            data: mon.data || [],
+            backgroundColor: 'rgba(239, 68, 68, 0.5)',
+            borderColor: 'rgba(239, 68, 68, 1)',
+            borderWidth: 1
+        }]
+    };
+});
+
+const dailyRentalData = computed(() => {
+    const d = a.value?.daily || { labels: [], data: [] };
+    return {
+        labels: d.labels || [],
+        datasets: [{
+            label: 'Average Daily Rentals',
+            data: d.data || [],
+            fill: false,
+            borderColor: 'rgba(239, 68, 68, 1)',
+            tension: 0.1
+        }]
+    };
+});
+
+const topVehicles = computed(() => a.value?.topVehicles || []);
+const lowPerformingVehicles = computed(() => a.value?.lowPerformingVehicles || []);
+
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(amount);
 };
 </script>
 
@@ -76,9 +149,39 @@ const metrics = {
 
         <div class="py-6">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="mb-6">
-                    <h1 class="text-2xl font-semibold text-gray-900">Rental Analytics</h1>
-                    <p class="mt-1 text-sm text-gray-600">Comprehensive rental performance analysis</p>
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-semibold text-gray-900">Rental Analytics</h1>
+                        <p class="mt-1 text-sm text-gray-600">Comprehensive rental performance analysis</p>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <label class="text-sm text-gray-600">Year</label>
+
+                        <!-- wrapper captures double-click to enable edit -->
+                        <div @dblclick="startEditYear" class="flex items-center">
+                            <!-- show select when not editing -->
+                            <select v-if="!isEditingYear" v-model="selectedYear" @change="onYearChange"
+                                class="rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
+                            </select>
+
+                            <!-- show input when editing -->
+                            <input
+                                v-else
+                                ref="yearInputRef"
+                                v-model="yearInput"
+                                type="number"
+                                min="1900"
+                                max="2100"
+                                @keydown.enter.prevent="saveYear"
+                                @keydown.esc.prevent="cancelEdit"
+                                @blur="saveYear"
+                                class="rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 w-24 text-center"
+                                placeholder="YYYY"
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Key Metrics -->
@@ -129,7 +232,6 @@ const metrics = {
                                 class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
                                     <p class="font-medium text-gray-900">{{ vehicle.model }}</p>
-                                    <p class="text-sm text-gray-500">{{ vehicle.type }}</p>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-sm font-semibold text-red-600">{{ vehicle.rentals }} rentals</p>
@@ -147,7 +249,6 @@ const metrics = {
                         <div v-for="(vehicle, index) in lowPerformingVehicles" :key="index"
                             class="p-4 bg-red-50 rounded-lg border border-red-100">
                             <p class="font-medium text-gray-900">{{ vehicle.model }}</p>
-                            <p class="text-sm text-gray-500">{{ vehicle.type }}</p>
                             <p class="text-sm font-semibold text-red-600 mt-2">{{ vehicle.rentals }} rentals</p>
                             <p class="text-xs text-gray-500">{{ vehicle.utilization }} utilization</p>
                         </div>
@@ -159,12 +260,10 @@ const metrics = {
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Key Insights</h3>
                     <div class="prose max-w-none">
                         <ul class="list-disc list-inside text-gray-600 space-y-2">
-                            <li>Sport bikes are the most popular category with 150 rentals</li>
-                            <li>Weekend rentals account for 45% of total rentals</li>
-                            <li>Scooters show lowest utilization rates at 25-30%</li>
-                            <li>Average rental duration is 3.5 days</li>
-                            <li>Peak rental periods occur during weekends and holidays</li>
-                            <li>The Ninja ZX-10R is the most frequently rented vehicle</li>
+                            <li v-if="topVehicles.length">Top vehicle: {{ topVehicles[0].model }} with {{ topVehicles[0].rentals }} rentals.</li>
+                            <li>Average rental duration is {{ metrics.averageRentalDuration }} days.</li>
+                            <li>Peak utilization: {{ metrics.peakUtilization }}.</li>
+                            <li>Most popular day(s): {{ metrics.popularDays }}.</li>
                         </ul>
                     </div>
                 </div>

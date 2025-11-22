@@ -1,17 +1,64 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, toRefs, watch } from 'vue';
 import InternalLayout from '@/Layouts/InternalLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import BarChart from '@/Components/Charts/BarChart.vue';
 import LineChart from '@/Components/Charts/LineChart.vue';
 import PieChart from '@/Components/Charts/PieChart.vue';
 
-// Vehicle Value Distribution by Type
-const vehicleValueData = {
-    labels: ['Sport Bike', 'Cruiser', 'Touring', 'Standard', 'Dual Sport', 'Scooter'],
+const props = defineProps({
+    vehiclesReport: {
+        type: Object,
+        required: false,
+        default: () => ({})
+    }
+});
+
+const { vehiclesReport: vr } = toRefs(props);
+
+// new: filter state (year + purchase date range)
+const selectedYear = ref(vr.value.selectedYear ?? '');
+const purchaseStart = ref(vr.value.purchase_start ?? '');
+const purchaseEnd = ref(vr.value.purchase_end ?? '');
+
+const years = computed(() => {
+    const current = new Date().getFullYear();
+    const out = [];
+    for (let i = 0; i < 6; i++) out.push(current - i);
+    return out;
+});
+
+const applyFilters = () => {
+    router.get(
+        route('internal.report.vehicle'),
+        {
+            year: selectedYear.value || undefined,
+            purchase_start: purchaseStart.value || undefined,
+            purchase_end: purchaseEnd.value || undefined
+        },
+        { preserveState: true, replace: true }
+    );
+};
+
+const resetFilters = () => {
+    selectedYear.value = '';
+    purchaseStart.value = '';
+    purchaseEnd.value = '';
+    applyFilters();
+};
+
+// keep local filters in sync when backend returns selected values
+watch(() => vr.value.selectedYear, (v) => { if (v !== undefined) selectedYear.value = v; });
+watch(() => vr.value.purchase_start, (v) => { if (v !== undefined) purchaseStart.value = v; });
+watch(() => vr.value.purchase_end, (v) => { if (v !== undefined) purchaseEnd.value = v; });
+
+// Charts and metrics derived from controller payload (fallbacks provided)
+const vehicleValueData = computed(() => ({
+    labels: vr.value.byType?.labels || [],
     datasets: [{
         label: 'Total Value by Type',
-        data: [2500000, 1800000, 3200000, 1200000, 900000, 500000],
+        data: vr.value.byType?.data || [],
         backgroundColor: [
             'rgba(239, 68, 68, 0.6)',
             'rgba(59, 130, 246, 0.6)',
@@ -21,47 +68,38 @@ const vehicleValueData = {
             'rgba(236, 72, 153, 0.6)'
         ]
     }]
-};
+}));
 
-// Vehicle Age Distribution
-const vehicleAgeData = {
-    labels: ['0-1 year', '1-2 years', '2-3 years', '3-4 years', '4-5 years', '5+ years'],
+const vehicleAgeData = computed(() => ({
+    labels: vr.value.ageDistribution?.labels || ['0-1 year', '1-2 years', '2-3 years', '3-4 years', '4-5 years', '5+ years'],
     datasets: [{
         label: 'Number of Vehicles',
-        data: [12, 15, 8, 6, 4, 2],
+        data: vr.value.ageDistribution?.data || [0,0,0,0,0,0],
         backgroundColor: 'rgba(239, 68, 68, 0.5)',
         borderColor: 'rgba(239, 68, 68, 1)',
         borderWidth: 1
     }]
-};
+}));
 
-// Maintenance Cost Trends
-const maintenanceCostData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+const maintenanceCostData = computed(() => ({
+    labels: vr.value.maintenance?.labels || ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
     datasets: [{
         label: 'Monthly Maintenance Costs',
-        data: [25000, 30000, 22000, 28000, 35000, 32000, 40000, 38000, 42000, 45000, 48000, 50000],
+        data: vr.value.maintenance?.data || Array(12).fill(0),
         fill: false,
         borderColor: 'rgba(239, 68, 68, 1)',
         tension: 0.1
     }]
-};
+}));
 
-// Most Valuable Vehicles
-const topVehicles = [
-    { model: 'Gold Wing Tour DCT', type: 'Touring', value: 1500000, year: 2023 },
-    { model: 'BMW K 1600 GTL', type: 'Touring', value: 1300000, year: 2023 },
-    { model: 'Ducati Panigale V4', type: 'Sport Bike', value: 1200000, year: 2023 },
-    { model: 'Harley-Davidson CVO', type: 'Cruiser', value: 1100000, year: 2022 },
-    { model: 'Kawasaki Ninja H2', type: 'Sport Bike', value: 950000, year: 2023 }
-];
+const topVehicles = computed(() => vr.value.topVehicles || []);
 
-const metrics = {
-    totalAssetValue: 10100000,
-    averageVehicleValue: 215000,
-    totalVehicles: 47,
-    maintenanceBudget: 435000
-};
+const metrics = computed(() => vr.value.metrics || {
+    totalAssetValue: 0,
+    averageVehicleValue: 0,
+    totalVehicles: 0,
+    maintenanceBudget: 0
+});
 
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-PH', {
@@ -81,6 +119,32 @@ const formatCurrency = (value) => {
                     <h1 class="text-2xl font-semibold text-gray-900">Vehicle Asset Report</h1>
                     <p class="mt-1 text-sm text-gray-600">Comprehensive overview of vehicle assets and valuations</p>
                 </div>
+
+                <!-- new: Filters -->
+                <!-- <div class="mb-6 flex flex-col md:flex-row md:items-end md:space-x-4 space-y-3 md:space-y-0">
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm text-gray-600">Year</label>
+                        <select v-model="selectedYear" class="rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                            <option value="">All</option>
+                            <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm text-gray-600">Purchase Start</label>
+                        <input type="date" v-model="purchaseStart" class="rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm text-gray-600">Purchase End</label>
+                        <input type="date" v-model="purchaseEnd" class="rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button @click="applyFilters" class="px-3 py-1 bg-red-600 text-white rounded-md text-sm">Apply</button>
+                        <button @click="resetFilters" class="px-3 py-1 border rounded-md text-sm">Reset</button>
+                    </div>
+                </div> -->
 
                 <!-- Key Metrics -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -136,10 +200,10 @@ const formatCurrency = (value) => {
                                 class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
                                     <p class="font-medium text-gray-900">{{ vehicle.model }}</p>
-                                    <p class="text-sm text-gray-500">{{ vehicle.type }} ({{ vehicle.year }})</p>
+                                    <p class="text-sm text-gray-500">{{ vehicle.type }} {{ vehicle.year ? '(' + vehicle.year + ')' : '' }}</p>
                                 </div>
                                 <p class="text-lg font-semibold text-red-600">
-                                    {{ formatCurrency(vehicle.value) }}
+                                    {{ formatCurrency(vehicle.value || 0) }}
                                 </p>
                             </div>
                         </div>
@@ -151,11 +215,10 @@ const formatCurrency = (value) => {
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Asset Management Insights</h3>
                     <div class="prose max-w-none">
                         <ul class="list-disc list-inside text-gray-600 space-y-2">
-                            <li>Touring bikes represent the highest value segment at {{ formatCurrency(3200000) }}</li>
-                            <li>57% of the fleet is less than 2 years old</li>
-                            <li>Monthly maintenance costs show an upward trend, averaging {{ formatCurrency(35000) }}</li>
-                            <li>Top 5 vehicles account for 60% of total fleet value</li>
-                            <li>Premium touring and sport bikes maintain the highest resale value</li>
+                            <li>Total asset value: {{ formatCurrency(metrics.totalAssetValue) }}</li>
+                            <li>Average vehicle value: {{ formatCurrency(metrics.averageVehicleValue) }}</li>
+                            <li>Maintenance budget estimate: {{ formatCurrency(metrics.maintenanceBudget) }}</li>
+                            <li>Top vehicle: {{ topVehicles.length ? topVehicles[0].model : 'N/A' }}</li>
                         </ul>
                     </div>
                 </div>

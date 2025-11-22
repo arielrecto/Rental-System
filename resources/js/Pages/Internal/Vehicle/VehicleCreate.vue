@@ -16,6 +16,8 @@ const form = ref({
     mileage: '',
     condition: 'New',
     rental_rate: '',
+    purchase_cost: '',
+    purchase_date: '',
     status: 'Available',
     image: null
 });
@@ -62,6 +64,8 @@ const submit = () => {
                 mileage: '',
                 condition: 'New',
                 rental_rate: '',
+                purchase_cost: '',
+                purchase_date: '',
                 status: 'Available',
                 image: null
             };
@@ -217,6 +221,53 @@ const submit = () => {
                                             class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                                         >
                                     </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Purchase Cost</label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span class="text-gray-500 sm:text-sm">₱</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                v-model="form.purchase_cost"
+                                                class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                            >
+                                        </div>
+                                        <div v-if="errors.purchase_cost" class="mt-1 text-sm text-red-600">
+                                            {{ errors.purchase_cost }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Purchase Date</label>
+                                        <input
+                                            type="date"
+                                            v-model="form.purchase_date"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                        >
+                                        <div v-if="errors.purchase_date" class="mt-1 text-sm text-red-600">
+                                            {{ errors.purchase_date }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Condition</label>
+                                    <select v-model="form.condition"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                        <option v-for="c in conditions" :key="c" :value="c">{{ c }}</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                                    <select v-model="form.status"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                        <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
