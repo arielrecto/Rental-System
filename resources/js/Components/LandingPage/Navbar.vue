@@ -25,9 +25,9 @@ const user = auth.user;
                             >Anaia's</span
                         >
                     </div>
-                    ;
+
                 </div>
-                ;
+
 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-8">

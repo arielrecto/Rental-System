@@ -18,7 +18,10 @@ class KioskController extends Controller
 
 
 
-        $rentalOrders = $this->transformRentalOrder(RentalOrder::whereIn('status', ['paid', 'in payment'])->get());
+        $rentalOrders = $this->transformRentalOrder(RentalOrder::whereIn('status', ['paid', 'in payment'])
+        ->orWhereHas('rentalVehicleSessions', function($q){
+            $q->where('status', 'active');
+        })->get());
 
 
 
@@ -146,6 +149,7 @@ class KioskController extends Controller
                 'start_date' => $order->rental_date,
                 'end_date' => $order->return_date,
                 'status' => $order->status,
+                'sessions' => $this->transformSession($order->rentalVehicleSessions->where('status', 'active')->first()),
             ];
         });
     }
