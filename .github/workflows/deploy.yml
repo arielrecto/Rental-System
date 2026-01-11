@@ -17,8 +17,7 @@ jobs:
         with:
           php-version: "8.2"
           extensions: mbstring, pdo_mysql, xml, curl, zip, bcmath
-          ini-values: display_errors = On
-            error_reporting = E_ALL
+          ini-values: display_errors = On, error_reporting = E_ALL
 
       - name: "nodejs"
         uses: actions/setup-node@v4
@@ -35,13 +34,18 @@ jobs:
         run: touch database/database.sqlite
 
       - name: environment variables
-        run: cp .env.example .env
+        # We enforce array cache here to prevent the "no such table" error during build
+        run: |
+          cp .env.example .env
+          echo "CACHE_DRIVER=array" >> .env
+          echo "CACHE_STORE=array" >> .env
+          echo "SESSION_DRIVER=array" >> .env
 
       - name: "npm run build"
         run: npm run build
 
-
       - name: Optimize Application
+        # This will now succeed because we switched to array driver above
         run: php artisan optimize:clear
 
       - name: Hostinger SSH Deployment
@@ -52,12 +56,13 @@ jobs:
           REMOTE_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
           REMOTE_USER: ${{ secrets.HOSTINGER_SSH_USER }}
           REMOTE_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
-
           TARGET: ${{ secrets.HOSTINGER_SSH_TARGET_PATH }}
-          EXCLUDE: "/node_modules, /storage, /bootstrap/cache, /public/storage, .env, .github, database/database.sqlite"
+          # Exclude git folder and local DB to prevent overwriting production data
+          EXCLUDE: "/node_modules, /storage, /bootstrap/cache, /public/storage, .env, .github, .git, database/database.sqlite"
 
+          # REMOVED 'git pull origin main' to avoid conflicts.
+          # You are already uploading the fresh code via SSH-Deploy.
           SCRIPT_AFTER: |
             cd ${{ secrets.HOSTINGER_SSH_TARGET_PATH }}
-            git pull origin main
-            php artisan migrate
+            php artisan migrate --force
             php artisan optimize:clear
