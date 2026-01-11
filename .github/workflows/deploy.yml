@@ -31,6 +31,9 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: add database sqlite
+        run: touch database/database.sqlite
+
       - name: environment variables
         run: cp .env.example .env
 
@@ -51,7 +54,7 @@ jobs:
           REMOTE_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
 
           TARGET: ${{ secrets.HOSTINGER_SSH_TARGET_PATH }}
-          EXCLUDE: "/node_modules, /storage, /bootstrap/cache, /public/storage, .env"
+          EXCLUDE: "/node_modules, /storage, /bootstrap/cache, /public/storage, .env, .github, database/database.sqlite"
 
           SCRIPT_AFTER: |
             cd ${{ secrets.HOSTINGER_SSH_TARGET_PATH }}
