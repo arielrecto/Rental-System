@@ -12,7 +12,8 @@ class Profile extends Model
         'phone_number',
         'address',
         'gender',
-        'birth_date'
+        'birth_date',
+        'user_id'
     ];
 
 

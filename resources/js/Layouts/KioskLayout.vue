@@ -75,7 +75,7 @@ console.log(props.activeSessions)
                         <img src="/logo.png" alt="Anaia's Motorcycle Rental" class="mr-4 w-auto h-12" />
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900">
-                                Rental Kiosk
+                                GPS
                             </h1>
                             <p class="text-sm text-gray-500">
                                 Manage rental sessions

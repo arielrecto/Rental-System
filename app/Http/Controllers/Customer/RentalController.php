@@ -27,8 +27,7 @@ class RentalController extends Controller
     {
 
 
-        $vehicles = Vehicle::where('status', 'Available')->paginate(12);
-
+        $vehicles = Vehicle::with(['image'])->where('status', 'Available')->paginate(12);
 
         return inertia::render('Customer/Rentals/RentalPage', compact([
             'vehicles'

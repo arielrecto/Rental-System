@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import InternalLayout from '@/Layouts/InternalLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+
 
 const props = defineProps({
     rentalOrder: {
@@ -153,13 +154,13 @@ const submit = () => {
 
                         <!-- Submit Buttons -->
                         <div class="flex justify-end space-x-3">
-                            <button
+                            <Link :href="route('internal.rental-orders.index')"
                                 type="button"
                                 @click="$router.go(-1)"
                                 class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                             >
                                 Cancel
-                            </button>
+                            </Link>
                             <button
                                 type="submit"
                                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"

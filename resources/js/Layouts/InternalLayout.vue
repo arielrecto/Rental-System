@@ -107,7 +107,7 @@ const navigation = [
         ]
     },
     {
-        name: 'Kiosk',
+        name: 'GPS',
         icon: DeviceTabletIcon,
         href: route('kiosk.index'),
         isActive: route().current('kiosk.*'),
@@ -131,11 +131,11 @@ const navigation = [
                 href: route('internal.user-management.create'),
                 isActive: route().current('internal.user-management.create')
             },
-            {
-                name: 'Roles & Permissions',
-                href: "#",
-                isActive: route().current('internal.users.roles')
-            }
+            // {
+            //     name: 'Roles & Permissions',
+            //     href: "#",
+            //     isActive: route().current('internal.users.roles')
+            // }
         ]
     },
     {

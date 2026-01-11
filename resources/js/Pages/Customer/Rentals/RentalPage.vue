@@ -13,6 +13,8 @@ const props = defineProps({
 });
 
 const rentModalState = ref(false);
+const previewModalState = ref(false);
+const previewFile = ref(null);
 
 const page = usePage();
 const isAuthenticated = ref(page.props.auth.user !== null);
@@ -41,7 +43,32 @@ const handleRentAction = (vehicle) => {
 
 const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
-    form.value.attachments = files;
+    form.value.attachments = [...form.value.attachments, ...files];
+};
+
+const getFilePreviewUrl = (file) => {
+    return URL.createObjectURL(file);
+};
+
+const isImageFile = (file) => {
+    return file.type.startsWith('image/');
+};
+
+const isPdfFile = (file) => {
+    return file.type === 'application/pdf';
+};
+
+const previewFileHandler = (file) => {
+    previewFile.value = {
+        name: file.name,
+        type: file.type,
+        url: getFilePreviewUrl(file)
+    };
+    previewModalState.value = true;
+};
+
+const removeFile = (index) => {
+    form.value.attachments.splice(index, 1);
 };
 
 const submitRentalOrder = () => {
@@ -82,8 +109,6 @@ const calculateTotalAmount = computed(() => {
     const end = new Date(form.value.end_date);
     const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-
-
     return days * selectedVehicle.value.rental_rate;
 });
 </script>
@@ -102,23 +127,6 @@ const calculateTotalAmount = computed(() => {
                     </p>
                 </div>
 
-                <!-- Category Filter -->
-                <!-- <div class="flex justify-center mb-8 space-x-4">
-                    <button
-                        v-for="category in categories"
-                        :key="category"
-                        @click="selectedCategory = category"
-                        :class="[
-                            'px-4 py-2 rounded-lg transition duration-300',
-                            selectedCategory === category
-                                ? 'bg-red-600 text-white'
-                                : 'bg-white text-gray-700 hover:bg-red-50'
-                        ]"
-                    >
-                        {{ category }}
-                    </button>
-                </div> -->
-
                 <!-- vehicles Grid -->
                 <div
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
@@ -128,20 +136,30 @@ const calculateTotalAmount = computed(() => {
                         :key="vehicle.id"
                         class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition duration-300"
                     >
-                        <img
+
+
+                        <img v-if="!vehicle.image"
                             src="https://i5.walmartimages.com/seo/Costway-12V-Kids-Ride-On-Motorcycle-Electric-Motor-Bike-w-Training-Wheels-Light-White_d435429e-f263-431b-8f32-1e2e578a3a14.f77ecd526dd5ddff468b78bfc5c3e41b.jpeg"
                             :alt="vehicle.brand + ' ' + vehicle.model"
                             class="w-full h-48 object-cover object-top"
                         />
+
+                        <img v-else
+                            :src="`${vehicle.image.file_path}`"
+                            :alt="vehicle.brand + ' ' + vehicle.model"
+                            class="w-full h-48 object-cover object-top"
+                        />
+
+
+
                         <div class="p-6">
                             <div class="flex justify-between items-start mb-4">
+
                                 <div>
                                     <h3
                                         class="text-xl font-semibold text-gray-800"
                                     >
-                                        {{
-                                            vehicle.brand + " " + vehicle.model
-                                        }}
+                                        {{ vehicle.brand + " " + vehicle.model }}
                                     </h3>
                                     <p class="text-gray-600">
                                         {{ vehicle.type }} | {{ vehicle.cc }}
@@ -156,7 +174,7 @@ const calculateTotalAmount = computed(() => {
                             </p>
                             <div class="flex justify-between items-center">
                                 <span
-                                    :class="[
+                                    :class=" [
                                         'px-3 py-1 rounded-full text-sm',
                                         vehicle.status === 'Available'
                                             ? 'bg-green-100 text-green-800'
@@ -195,6 +213,7 @@ const calculateTotalAmount = computed(() => {
             </div>
         </div>
 
+        <!-- Rental Modal -->
         <Modal :modelValue="rentModalState" @close="rentModalState = false" size="xl">
             <template #header>
                 <h2 class="text-xl font-bold text-gray-800">Rent Vehicle</h2>
@@ -254,12 +273,12 @@ const calculateTotalAmount = computed(() => {
                             ></textarea>
                         </div>
 
-                        <!-- Add this before the Total Amount section -->
+                        <!-- Valid IDs Upload -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 Valid IDs (Required)
                             </label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-red-500 transition-colors">
                                 <div class="space-y-1 text-center">
                                     <svg
                                         class="mx-auto h-12 w-12 text-gray-400"
@@ -296,26 +315,71 @@ const calculateTotalAmount = computed(() => {
                                     </p>
                                 </div>
                             </div>
-                            <!-- File Preview -->
-                            <div v-if="form.attachments.length" class="mt-2 space-y-2">
+
+                            <!-- File Preview Grid -->
+                            <div v-if="form.attachments.length" class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div
                                     v-for="(file, index) in form.attachments"
                                     :key="index"
-                                    class="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                                    class="relative group bg-gray-50 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-red-500 transition-colors"
                                 >
-                                    <span class="text-sm text-gray-600">{{ file.name }}</span>
-                                    <button
-                                        type="button"
-                                        @click="form.attachments.splice(index, 1)"
-                                        class="text-red-600 hover:text-red-800"
-                                    >
-                                        <span class="sr-only">Remove</span>
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    <!-- Image Preview -->
+                                    <div v-if="isImageFile(file)" class="aspect-square">
+                                        <img
+                                            :src="getFilePreviewUrl(file)"
+                                            :alt="file.name"
+                                            class="w-full h-full object-cover cursor-pointer"
+                                            @click="previewFileHandler(file)"
+                                        />
+                                    </div>
+
+                                    <!-- PDF Preview -->
+                                    <div v-else-if="isPdfFile(file)"
+                                         class="aspect-square flex flex-col items-center justify-center p-4 cursor-pointer"
+                                         @click="previewFileHandler(file)">
+                                        <svg class="h-16 w-16 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
                                         </svg>
-                                    </button>
+                                        <p class="mt-2 text-xs text-gray-600 text-center font-medium">PDF</p>
+                                    </div>
+
+                                    <!-- File name and actions -->
+                                    <div class="p-2 bg-white">
+                                        <p class="text-xs text-gray-600 truncate" :title="file.name">
+                                            {{ file.name }}
+                                        </p>
+                                        <div class="flex justify-between items-center mt-1">
+                                            <span class="text-xs text-gray-500">
+                                                {{ (file.size / 1024).toFixed(1) }} KB
+                                            </span>
+                                            <div class="flex space-x-1">
+                                                <button
+                                                    type="button"
+                                                    @click="previewFileHandler(file)"
+                                                    class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+                                                    title="Preview"
+                                                >
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    @click="removeFile(index)"
+                                                    class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                                                    title="Remove"
+                                                >
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
                             <div v-if="formErrors.attachments" class="text-red-500 text-sm mt-1">
                                 {{ formErrors.attachments }}
                             </div>
@@ -346,6 +410,46 @@ const calculateTotalAmount = computed(() => {
                         class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300"
                     >
                         Confirm Rental
+                    </button>
+                </div>
+            </template>
+        </Modal>
+
+        <!-- File Preview Modal -->
+        <Modal v-model="previewModalState" @close="previewModalState = false" size="4xl">
+            <template #header>
+                <h3 class="text-lg font-semibold text-gray-900">{{ previewFile?.name }}</h3>
+            </template>
+
+            <template #default>
+                <div v-if="previewFile" class="bg-gray-900 rounded-lg overflow-hidden">
+                    <!-- Image Preview -->
+                    <div v-if="isImageFile({ type: previewFile.type })" class="flex justify-center items-center p-4">
+                        <img
+                            :src="previewFile.url"
+                            :alt="previewFile.name"
+                            class="max-w-full max-h-[70vh] object-contain"
+                        />
+                    </div>
+
+                    <!-- PDF Preview -->
+                    <div v-else-if="isPdfFile({ type: previewFile.type })" class="w-full" style="height: 70vh;">
+                        <iframe
+                            :src="previewFile.url"
+                            class="w-full h-full border-0"
+                            title="PDF Preview"
+                        ></iframe>
+                    </div>
+                </div>
+            </template>
+
+            <template #footer>
+                <div class="flex justify-end">
+                    <button
+                        @click="previewModalState = false"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition duration-300"
+                    >
+                        Close
                     </button>
                 </div>
             </template>

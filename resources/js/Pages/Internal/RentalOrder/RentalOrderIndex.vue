@@ -72,8 +72,8 @@ const getStatusColor = (status) => {
                                 {{ item.vehicle.brand }} {{ item.vehicle.model }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ new Date(item.start_date).toLocaleDateString() }} -
-                                {{ new Date(item.end_date).toLocaleDateString() }}
+                                {{ new Date(item.rental_date).toLocaleDateString() }} -
+                                {{ new Date(item.return_date).toLocaleDateString() }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 ₱{{ item.total_amount.toLocaleString() }}

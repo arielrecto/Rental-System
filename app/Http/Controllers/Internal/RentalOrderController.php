@@ -71,6 +71,9 @@ class RentalOrderController extends Controller
      */
     public function store(Request $request)
     {
+
+
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'vehicle_id' => 'required|exists:vehicles,id',
@@ -91,8 +94,8 @@ class RentalOrderController extends Controller
         $rentalOrder = RentalOrder::create([
             'user_id' => $request->user_id,
             'vehicle_id' => $request->vehicle_id,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
+            'rental_date' => $request->start_date,
+            'return_date' => $request->end_date,
             'total_amount' => $total_amount,
             'status' => $request->status,
             'notes' => $request->notes

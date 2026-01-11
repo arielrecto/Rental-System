@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Internal;
 
 use App\Models\User;
-use Inertia\Inertia;
 use App\Models\Profile;
+use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -14,8 +14,7 @@ class UserManagementController extends Controller
 {
     public function index()
     {
-        $users = User::role('internal')
-            ->with('profile')
+        $users = User::with(['profile', 'roles'])
             ->latest()
             ->paginate(10);
 
@@ -29,41 +28,52 @@ class UserManagementController extends Controller
         return Inertia::render('Internal/UserManagement/UserManagementCreate');
     }
 
+    public function show( $id){
+        $user = User::with(['profile', 'roles'])->find($id);
+
+
+        return Inertia::render('Internal/UserManagement/UserManagementShow', compact('user'));
+    }
+
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Password::defaults()],
-            'phone' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
+            'pin' => 'required|numeric|digits_between:4,6|confirmed',
+            // Profile fields
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'gender' => 'nullable|in:male,female,other',
+            'birth_date' => 'nullable|date|before:today'
         ]);
 
+        // Create user
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'pin' => Hash::make($validated['pin'])
         ]);
 
-        $user->assignRole('internal');
+        // Create profile if any profile data is provided
+        if ($request->filled(['first_name', 'last_name', 'phone_number', 'address', 'gender', 'birth_date'])) {
+            Profile::create([
+                'user_id' => $user->id,
+                'first_name' => $validated['first_name'] ?? null,
+                'last_name' => $validated['last_name'] ?? null,
+                'phone_number' => $validated['phone_number'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'gender' => $validated['gender'] ?? null,
+                'birth_date' => $validated['birth_date'] ?? null
+            ]);
+        }
 
-        Profile::create([
-            'user_id' => $user->id,
-            'phone' => $request->phone,
-            'address' => $request->address,
-        ]);
-
-        return redirect()->route('internal.users.index')
+        return redirect()->route('internal.user-management.index')
             ->with('success', 'User created successfully');
-    }
-
-    public function show(string $id)
-    {
-        $user = User::with('profile')->findOrFail($id);
-
-        return Inertia::render('Internal/UserManagement/UserManagementShow', [
-            'user' => $user
-        ]);
     }
 
     public function edit(string $id)
@@ -78,39 +88,60 @@ class UserManagementController extends Controller
     public function update(Request $request, string $id)
     {
         $user = User::findOrFail($id);
-     
 
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'pin' => $request->pin
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'password' => ['nullable', 'confirmed', Password::defaults()],
+            'pin' => 'nullable|numeric|digits_between:4,6|confirmed',
+            // Profile fields
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'gender' => 'nullable|in:male,female,other',
+            'birth_date' => 'nullable|date|before:today'
         ]);
 
-        if ($request->password) {
-            $user->update([
-                'password' => Hash::make($request->password),
-            ]);
+        // Update user
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+
+        // Update password if provided
+        if ($request->filled('password')) {
+            $user->update(['password' => Hash::make($validated['password'])]);
         }
 
-
-        if($user->profile){
-            $user->profile->update([
-                'phone' => $request->phone,
-                'address' => $request->address,
-            ]);
+        // Update PIN if provided
+        if ($request->filled('pin')) {
+            $user->update(['pin' => Hash::make($validated['pin'])]);
         }
 
-        return back()
+        // Update or create profile
+        $user->profile()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'first_name' => $validated['first_name'] ?? null,
+                'last_name' => $validated['last_name'] ?? null,
+                'phone_number' => $validated['phone_number'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'gender' => $validated['gender'] ?? null,
+                'birth_date' => $validated['birth_date'] ?? null
+            ]
+        );
+
+        return redirect()->route('internal.user-management.index')
             ->with('success', 'User updated successfully');
     }
 
     public function destroy(string $id)
     {
         $user = User::findOrFail($id);
-        $user->profile()->delete();
         $user->delete();
 
-        return redirect()->route('internal.users.index')
+        return redirect()->route('internal.user-management.index')
             ->with('success', 'User deleted successfully');
     }
 }

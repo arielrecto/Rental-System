@@ -156,6 +156,11 @@ class KioskController extends Controller
 
     private function transformSession($session)
     {
+
+
+      if (!$session) {
+          return null;
+      }
         return [
             'id' => $session->id,
             'session_token' => $session->session_token,

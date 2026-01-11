@@ -126,7 +126,7 @@ class MaintenanceVehicleRequestController extends Controller
 
         $maintenance->update($validated);
 
-        return redirect()->route('maintenance.index')
+        return back()
             ->with('success', 'Maintenance request updated successfully.');
     }
 

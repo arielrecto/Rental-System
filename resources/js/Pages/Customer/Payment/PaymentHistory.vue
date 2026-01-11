@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import CustomerLayout from '@/Layouts/CustomerLayout.vue';
 import DataTable from '@/Components/DataTable.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { PlusIcon, TableCellsIcon, Squares2X2Icon } from '@heroicons/vue/24/outline';
+import { PlusIcon, TableCellsIcon, Squares2X2Icon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import Modal from '@/Components/Modal.vue';
 import { router } from '@inertiajs/vue3'
 
@@ -24,7 +24,11 @@ const props = defineProps({
 
 const viewMode = ref('list');
 const deleteModal = ref(false);
+const viewModal = ref(false);
+const imagePreviewModal = ref(false);
 const paymentToDelete = ref(null);
+const selectedPayment = ref(null);
+const previewImage = ref(null);
 const filters = ref({
     status: '',
     paymentAccount: '',
@@ -82,18 +86,31 @@ const getStatusColor = (status) => {
     }[status] || 'bg-gray-100 text-gray-800';
 };
 
+const viewPayment = (payment) => {
+    selectedPayment.value = payment;
+    viewModal.value = true;
+};
+
 const confirmDelete = (payment) => {
     paymentToDelete.value = payment;
     deleteModal.value = true;
 };
 
 const handleDelete = () => {
-    router.delete(route('customer.payments.destroy', paymentToDelete.value.id), {
+    router.delete(route('customer.payments.delete', paymentToDelete.value.id), {
         onSuccess: () => {
             deleteModal.value = false;
             paymentToDelete.value = null;
         }
     });
+};
+
+const openImagePreview = (imagePath, imageName) => {
+    previewImage.value = {
+        path: imagePath,
+        name: imageName
+    };
+    imagePreviewModal.value = true;
 };
 </script>
 
@@ -203,14 +220,10 @@ const handleDelete = () => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end space-x-3">
-                                        <Link href="#'"
+                                        <button @click="viewPayment(item)"
                                             class="text-red-600 hover:text-red-900">
-                                        View
-                                        </Link>
-                                        <Link :href="route('customer.payments.edit', item.id)"
-                                            class="text-red-600 hover:text-red-900">
-                                        Edit
-                                        </Link>
+                                            View
+                                        </button>
                                         <button @click="confirmDelete(item)" class="text-red-600 hover:text-red-900">
                                             Delete
                                         </button>
@@ -259,14 +272,10 @@ const handleDelete = () => {
                             </div>
 
                             <div class="mt-6 flex justify-end space-x-3">
-                                <Link href="#"
+                                <button @click="viewPayment(payment)"
                                     class="text-red-600 hover:text-red-900 text-sm font-medium">
-                                View
-                                </Link>
-                                <Link :href="route('internal.payments.edit', payment.id)"
-                                    class="text-red-600 hover:text-red-900 text-sm font-medium">
-                                Edit
-                                </Link>
+                                    View
+                                </button>
                                 <button @click="confirmDelete(payment)"
                                     class="text-red-600 hover:text-red-900 text-sm font-medium">
                                     Delete
@@ -277,6 +286,150 @@ const handleDelete = () => {
                 </div>
             </div>
         </div>
+
+        <!-- View Payment Modal -->
+        <Modal v-model="viewModal" max-width="2xl">
+            <div class="p-6" v-if="selectedPayment">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900">Payment Details</h3>
+                        <p class="text-sm text-gray-600 mt-1">{{ selectedPayment.ref_number }}</p>
+                    </div>
+                    <span :class="[
+                        getStatusColor(selectedPayment.status),
+                        'px-3 py-1 rounded-full text-xs font-semibold'
+                    ]">
+                        {{ selectedPayment.status.toUpperCase() }}
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Payment Information -->
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500">Amount</h4>
+                            <p class="mt-1 text-2xl font-bold text-gray-900">
+                                {{ formatCurrency(selectedPayment.total_amount) }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500">Payment Method</h4>
+                            <p class="mt-1 text-sm text-gray-900">
+                                {{ selectedPayment.payment_account.provider }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                {{ selectedPayment.payment_account.name }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500">Payment For</h4>
+                            <p class="mt-1 text-sm text-gray-900">
+                                {{ selectedPayment.payable?.type }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                Ref: {{ selectedPayment.payable?.ref_number }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500">Date</h4>
+                            <p class="mt-1 text-sm text-gray-900">
+                                {{ new Date(selectedPayment.created_at).toLocaleString() }}
+                            </p>
+                        </div>
+
+                        <div v-if="selectedPayment.memo">
+                            <h4 class="text-sm font-medium text-gray-500">Memo</h4>
+                            <p class="mt-1 text-sm text-gray-900">
+                                {{ selectedPayment.memo }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Proof of Payment -->
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">Proof of Payment</h4>
+                        <div v-if="selectedPayment.proof_of_payment" class="border-2 border-gray-200 rounded-lg overflow-hidden relative group">
+                            <img
+                                :src="selectedPayment.proof_of_payment.file_path"
+                                :alt="selectedPayment.proof_of_payment.file_name"
+                                class="w-full h-auto object-contain cursor-pointer"
+                                @click="openImagePreview(selectedPayment.proof_of_payment.file_path, selectedPayment.proof_of_payment.file_name)"
+                            />
+                            <!-- Hover overlay with magnifying glass icon -->
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center cursor-pointer"
+                                 @click="openImagePreview(selectedPayment.proof_of_payment.file_path, selectedPayment.proof_of_payment.file_name)">
+                                <MagnifyingGlassIcon class="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3">
+                                <p class="text-xs text-gray-600">{{ selectedPayment.proof_of_payment.file_name }}</p>
+                                <button
+                                    type="button"
+                                    @click="openImagePreview(selectedPayment.proof_of_payment.file_path, selectedPayment.proof_of_payment.file_name)"
+                                    class="mt-2 text-xs text-red-600 hover:text-red-700 font-medium flex items-center"
+                                >
+                                    <MagnifyingGlassIcon class="h-4 w-4 mr-1" />
+                                    View Full Size
+                                </button>
+                            </div>
+                        </div>
+                        <div v-else class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-600">No proof of payment uploaded</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button
+                        @click="viewModal = false"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm font-medium"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </Modal>
+
+        <!-- Image Preview Modal -->
+        <Modal v-model="imagePreviewModal" max-width="5xl">
+            <div class="p-4 bg-gray-900" v-if="previewImage">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-white">{{ previewImage.name }}</h3>
+                    <button
+                        @click="imagePreviewModal = false"
+                        class="text-gray-400 hover:text-white"
+                    >
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex justify-center items-center bg-black rounded-lg overflow-hidden" style="max-height: 80vh;">
+                    <img
+                        :src="previewImage.path"
+                        :alt="previewImage.name"
+                        class="max-w-full max-h-full object-contain"
+                    />
+                </div>
+                <div class="mt-4 flex justify-center">
+                    <a
+                        :href="previewImage.path"
+                        download
+                        class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                    >
+                        <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download
+                    </a>
+                </div>
+            </div>
+        </Modal>
 
         <!-- Delete Confirmation Modal -->
         <Modal v-model="deleteModal">

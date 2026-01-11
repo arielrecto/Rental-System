@@ -204,12 +204,12 @@ const viewDetailAction = (rentalOrder) => {
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
                             >
-                                {{ item.rental_date }}
+                                {{ new Date(item.rental_date).toLocaleDateString() }}
                             </td>
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
                             >
-                                {{ item.return_date }}
+                                {{ new Date(item.return_date).toLocaleDateString() }}
                             </td>
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"

@@ -18,4 +18,8 @@ class PaymentAccount extends Model
     public function payments(){
         return $this->hasMany(Payment::class);
     }
+
+     public function attachments(){
+        return $this->morphMany(Attachment::class, 'attachable');
+    }
 }

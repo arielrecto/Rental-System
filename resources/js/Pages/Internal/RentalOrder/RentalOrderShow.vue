@@ -71,12 +71,12 @@ console.log(props.rentalOrder);
                         >
                             Edit Order
                         </Link>
-                        <button
+                        <!-- <button
                             v-if="rentalOrder.status === 'pending'"
                             class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700"
                         >
                             Approve Order
-                        </button>
+                        </button> -->
                     </div>
                 </div>
 
@@ -236,7 +236,7 @@ console.log(props.rentalOrder);
                                     Rental Session Details
                                 </h2>
                                 </div>
-                               
+
                                 <h1 class="text-xs text-green-500 font-bold">Status : {{ rentalOrder.rental_vehicle_sessions[0].status }}</h1>
                             </div>
                             <div class="space-y-2">

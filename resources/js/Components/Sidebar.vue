@@ -25,7 +25,7 @@ const toggleItem = (itemName) => {
     <div class="w-64 bg-white shadow-lg">
         <!-- Logo Section -->
         <div class="flex items-center h-16 px-6 border-b border-gray-200">
-            <span class="text-2xl font-bold text-red-600">Anaia's</span>
+            <Link :href="route('home')" class="text-2xl font-bold text-red-600">Anaia's</Link>
         </div>
 
         <!-- Navigation Menu -->
