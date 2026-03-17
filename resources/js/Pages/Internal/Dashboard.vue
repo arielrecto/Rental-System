@@ -96,7 +96,7 @@ const navigation = [
     },
 
     {
-        name: "Kiosk",
+        name: "GPS",
         icon: DeviceTabletIcon,
         href: route('kiosk.index'),
         isActive: false,

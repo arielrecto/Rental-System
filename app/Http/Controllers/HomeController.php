@@ -12,7 +12,7 @@ class HomeController extends Controller
     {
         $userRole = User::find(Auth::user()->id)->roles()->first();
 
-        if ($userRole->name == 'customer') {
+        if ($userRole?->name == 'customer') {
             return redirect()->route('customer.dashboard');
         }
 

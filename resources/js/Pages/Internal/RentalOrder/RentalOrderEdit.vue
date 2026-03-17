@@ -23,8 +23,8 @@ const props = defineProps({
 const form = ref({
     user_id: props.rentalOrder.user_id,
     vehicle_id: props.rentalOrder.vehicle_id,
-    start_date: props.rentalOrder.start_date,
-    end_date: props.rentalOrder.end_date,
+    start_date: props.rentalOrder.rental_date,
+    end_date: props.rentalOrder.return_date,
     notes: props.rentalOrder.notes,
     status: props.rentalOrder.status
 });

@@ -1,9 +1,11 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { computed } from 'vue';
+import { usePage, Head } from '@inertiajs/vue3';
+import CustomerLayout from '@/Layouts/CustomerLayout.vue';
+import InternalLayout from '@/Layouts/InternalLayout.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
-import { Head } from '@inertiajs/vue3';
 
 defineProps({
     mustVerifyEmail: {
@@ -13,12 +15,17 @@ defineProps({
         type: String,
     },
 });
+
+const page = usePage();
+const Layout = computed(() =>
+    page.props.auth.roles?.includes('internal') ? InternalLayout : CustomerLayout
+);
 </script>
 
 <template>
     <Head title="Profile" />
 
-    <AuthenticatedLayout>
+    <component :is="Layout">
         <template #header>
             <h2 class="text-2xl font-semibold text-gray-900">
                 Profile Settings
@@ -70,7 +77,7 @@ defineProps({
                 </div>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </component>
 </template>
 
 <style scoped>

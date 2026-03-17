@@ -98,7 +98,7 @@ const navigation = [
     {
         name: 'Profile',
         icon: UserCircleIcon,
-        href: '#',
+        href: route('profile.edit'),
         isActive: route().current('profile.edit'),
         children: []
     }

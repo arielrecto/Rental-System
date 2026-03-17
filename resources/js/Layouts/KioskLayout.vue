@@ -71,7 +71,7 @@ console.log(props.activeSessions)
         <header class="bg-white shadow-md">
             <div class="px-4 py-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center">
-                    <div class="flex items-center">
+                    <a href="/" class="flex items-center">
                         <img src="/logo.png" alt="Anaia's Motorcycle Rental" class="mr-4 w-auto h-12" />
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900">
@@ -81,7 +81,7 @@ console.log(props.activeSessions)
                                 Manage rental sessions
                             </p>
                         </div>
-                    </div>
+                    </a>
 
                       <div class="flex items-center space-x-6">
 

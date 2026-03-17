@@ -26,12 +26,14 @@ const imagePreview = ref(null);
 const errors = ref({});
 
 const vehicleTypes = [
-    'Sport Bike',
-    'Cruiser',
-    'Touring',
-    'Standard',
-    'Dual Sport',
-    'Scooter'
+    // 'Sport Bike',
+    // 'Cruiser',
+    // 'Touring',
+    // 'Standard',
+    // 'Dual Sport',
+    // 'Scooter'
+    'Scooter(125cc)',
+    'Maxi Scooter (155cc - 160cc)'
 ];
 
 const conditions = ['New', 'Used', 'Excellent', 'Good', 'Fair'];
