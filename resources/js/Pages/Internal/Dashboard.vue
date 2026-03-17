@@ -95,6 +95,7 @@ const navigation = [
         ],
     },
 
+
     {
         name: "GPS",
         icon: DeviceTabletIcon,
