@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Internal;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Vehicle;
@@ -77,7 +78,7 @@ class RentalOrderController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'vehicle_id' => 'required|exists:vehicles,id',
-            'start_date' => 'required|date|after_or_equal:today',
+            'start_date' => 'required|date|after_or_equal:now',
             'end_date' => 'required|date|after:start_date',
             'notes' => 'nullable|string',
             'status' => 'required|in:pending,active,completed,cancelled'
@@ -85,10 +86,9 @@ class RentalOrderController extends Controller
 
         $vehicle = Vehicle::findOrFail($request->vehicle_id);
 
-        // Calculate total amount
-        $start = new \DateTime($request->start_date);
-        $end = new \DateTime($request->end_date);
-        $days = $start->diff($end)->days + 1;
+        $days = max(1, (int) ceil(
+            Carbon::parse($request->start_date)->diffInMinutes(Carbon::parse($request->end_date)) / 1440
+        ));
         $total_amount = $days * $vehicle->rental_rate;
 
         $rentalOrder = RentalOrder::create([
@@ -117,7 +117,7 @@ class RentalOrderController extends Controller
      */
     public function show(string $id)
     {
-        $rentalOrder = RentalOrder::with(['user.profile', 'vehicle', 'attachments', 'rentalVehicleSessions'])
+        $rentalOrder = RentalOrder::with(['user.profile.attachments', 'vehicle', 'attachments', 'rentalVehicleSessions'])
             ->findOrFail($id);
 
 
@@ -180,10 +180,9 @@ class RentalOrderController extends Controller
 
         $vehicle = Vehicle::findOrFail($request->vehicle_id);
 
-        // Calculate total amount
-        $start = new \DateTime($request->start_date);
-        $end = new \DateTime($request->end_date);
-        $days = $start->diff($end)->days + 1;
+        $days = max(1, (int) ceil(
+            Carbon::parse($request->start_date)->diffInMinutes(Carbon::parse($request->end_date)) / 1440
+        ));
         $total_amount = $days * $vehicle->rental_rate;
 
         // Update old vehicle status if changed
@@ -193,13 +192,13 @@ class RentalOrderController extends Controller
         }
 
         $rentalOrder->update([
-            'user_id' => $request->user_id,
-            'vehicle_id' => $request->vehicle_id,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
+            'user_id'      => $request->user_id,
+            'vehicle_id'   => $request->vehicle_id,
+            'rental_date'  => $request->start_date,
+            'return_date'  => $request->end_date,
             'total_amount' => $total_amount,
-            'status' => $request->status,
-            'notes' => $request->notes
+            'status'       => $request->status,
+            'notes'        => $request->notes,
         ]);
 
         return redirect()->route('internal.rental-orders.index')

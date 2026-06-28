@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import InternalLayout from '@/Layouts/InternalLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -52,6 +52,22 @@ const getFullName = () => {
         return props.user.name;
     }
     return `${props.user.profile?.first_name || ''} ${props.user.profile?.last_name || ''}`.trim();
+};
+
+const validIdAttachments = computed(() =>
+    (props.user.profile?.attachments ?? []).filter(a => a.category === 'valid_id')
+);
+const licenseAttachments = computed(() =>
+    (props.user.profile?.attachments ?? []).filter(a => a.category === 'drivers_license')
+);
+const isLicenseVerified = computed(() => props.user.profile?.drivers_license_verified ?? false);
+
+const ltoPortalUrl = 'https://portal.lto.gov.ph';
+
+const verifyLicense = () => {
+    router.patch(route('internal.user-management.verify-license', props.user.id), {}, {
+        preserveScroll: true,
+    });
 };
 </script>
 
@@ -201,6 +217,93 @@ const getFullName = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Emergency Contact Card -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                            Emergency Contact
+                        </h2>
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-xs text-gray-500">Name</p>
+                                <p class="text-sm text-gray-800 mt-0.5">{{ user.profile?.emergency_contact_name || 'Not provided' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Relationship</p>
+                                <p class="text-sm text-gray-800 mt-0.5">{{ user.profile?.emergency_contact_relationship || 'Not provided' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Phone</p>
+                                <p class="text-sm text-gray-800 mt-0.5">{{ user.profile?.emergency_contact_phone || 'Not provided' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Driver's License Card -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
+                            <h2 class="text-lg font-medium text-gray-900">Driver's License</h2>
+                            <span v-if="isLicenseVerified"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                Verified
+                            </span>
+                            <span v-else class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                Pending
+                            </span>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-xs text-gray-500">License Number</p>
+                                <p class="text-sm text-gray-800 font-mono mt-0.5">{{ user.profile?.drivers_license_number || 'Not provided' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Expiry Date</p>
+                                <p class="text-sm text-gray-800 mt-0.5">{{ user.profile?.drivers_license_expiry ? formatDate(user.profile.drivers_license_expiry) : 'Not provided' }}</p>
+                            </div>
+
+                            <div v-if="licenseAttachments.length > 0" class="flex flex-wrap gap-2 mt-2">
+                                <a v-for="att in licenseAttachments" :key="att.id" :href="att.file_path" target="_blank" class="block">
+                                    <img v-if="['jpg','jpeg','png'].includes(att.file_extension)" :src="att.file_path"
+                                        class="h-20 w-20 object-cover rounded-lg border border-gray-200 hover:opacity-80 transition" />
+                                    <div v-else class="h-20 w-20 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition">
+                                        <span class="text-xs text-gray-500 font-medium">{{ att.file_extension.toUpperCase() }}</span>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="flex gap-2 pt-2" v-if="user.profile?.drivers_license_number">
+                                <a :href="ltoPortalUrl" target="_blank"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-100 transition">
+                                    Open LTO Portal
+                                </a>
+                                <button v-if="!isLicenseVerified" @click="verifyLicense"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-semibold bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+                                    Mark as Verified
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Card -->
+                    <div class="bg-white shadow rounded-lg p-6 md:col-span-2">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                            Valid Government IDs
+                        </h2>
+                        <div v-if="validIdAttachments.length > 0" class="flex flex-wrap gap-3">
+                            <a v-for="att in validIdAttachments" :key="att.id" :href="att.file_path" target="_blank" class="block">
+                                <img v-if="['jpg','jpeg','png'].includes(att.file_extension)" :src="att.file_path"
+                                    class="h-28 w-28 object-cover rounded-lg border border-gray-200 hover:opacity-80 transition" />
+                                <div v-else class="h-28 w-28 flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition gap-1">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    <span class="text-xs text-gray-500 font-medium">{{ att.file_extension.toUpperCase() }}</span>
+                                </div>
+                            </a>
+                        </div>
+                        <p v-else class="text-sm text-gray-500">No government IDs uploaded yet.</p>
                     </div>
 
                     <!-- Activity Summary Card -->

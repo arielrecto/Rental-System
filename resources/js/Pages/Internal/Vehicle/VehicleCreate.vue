@@ -139,38 +139,44 @@ const submit = () => {
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Brand</label>
-                                    <input
-                                        type="text"
-                                        v-model="form.brand"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                                    >
-                                    <div v-if="errors.brand" class="mt-1 text-sm text-red-600">
-                                        {{ errors.brand }}
-                                    </div>
+                                    <input type="text" v-model="form.brand"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                    <div v-if="errors.brand" class="mt-1 text-sm text-red-600">{{ errors.brand }}</div>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Model</label>
-                                    <input
-                                        type="text"
-                                        v-model="form.model"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                                    >
-                                    <div v-if="errors.model" class="mt-1 text-sm text-red-600">
-                                        {{ errors.model }}
-                                    </div>
+                                    <input type="text" v-model="form.model"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                    <div v-if="errors.model" class="mt-1 text-sm text-red-600">{{ errors.model }}</div>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Plate Number</label>
-                                    <input
-                                        type="text"
-                                        v-model="form.plate_no"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                                    >
-                                    <div v-if="errors.plate_no" class="mt-1 text-sm text-red-600">
-                                        {{ errors.plate_no }}
-                                    </div>
+                                    <input type="text" v-model="form.plate_no"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                    <div v-if="errors.plate_no" class="mt-1 text-sm text-red-600">{{ errors.plate_no }}</div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Manufacturer</label>
+                                    <input type="text" v-model="form.manufacturer"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                    <div v-if="errors.manufacturer" class="mt-1 text-sm text-red-600">{{ errors.manufacturer }}</div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Color</label>
+                                    <input type="text" v-model="form.color"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                    <div v-if="errors.color" class="mt-1 text-sm text-red-600">{{ errors.color }}</div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Country of Origin</label>
+                                    <input type="text" v-model="form.country_of_origin"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                    <div v-if="errors.country_of_origin" class="mt-1 text-sm text-red-600">{{ errors.country_of_origin }}</div>
                                 </div>
                             </div>
 
@@ -200,14 +206,16 @@ const submit = () => {
                                             v-model="form.year"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                                         >
+                                        <div v-if="errors.year" class="mt-1 text-sm text-red-600">{{ errors.year }}</div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700">Mileage</label>
+                                        <label class="block text-sm font-medium text-gray-700">Mileage (km)</label>
                                         <input
                                             type="number"
                                             v-model="form.mileage"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                                         >
+                                        <div v-if="errors.mileage" class="mt-1 text-sm text-red-600">{{ errors.mileage }}</div>
                                     </div>
                                 </div>
 
@@ -223,6 +231,7 @@ const submit = () => {
                                             class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                                         >
                                     </div>
+                                    <div v-if="errors.rental_rate" class="mt-1 text-sm text-red-600">{{ errors.rental_rate }}</div>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4">
@@ -262,6 +271,7 @@ const submit = () => {
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                                         <option v-for="c in conditions" :key="c" :value="c">{{ c }}</option>
                                     </select>
+                                    <div v-if="errors.condition" class="mt-1 text-sm text-red-600">{{ errors.condition }}</div>
                                 </div>
 
                                 <div>
@@ -270,6 +280,7 @@ const submit = () => {
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                                         <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
                                     </select>
+                                    <div v-if="errors.status" class="mt-1 text-sm text-red-600">{{ errors.status }}</div>
                                 </div>
                             </div>
                         </div>

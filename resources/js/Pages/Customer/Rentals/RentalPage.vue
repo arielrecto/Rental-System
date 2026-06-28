@@ -7,8 +7,12 @@ import Modal from "@/Components/Modal.vue";
 
 const props = defineProps({
     vehicles: {
-        type: Array,
+        type: Object,
         required: true,
+    },
+    userProfile: {
+        type: Object,
+        default: () => null,
     },
 });
 
@@ -107,10 +111,13 @@ const calculateTotalAmount = computed(() => {
 
     const start = new Date(form.value.start_date);
     const end = new Date(form.value.end_date);
-    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
 
     return days * selectedVehicle.value.rental_rate;
 });
+
+const profileAttachments = computed(() => props.userProfile?.attachments ?? []);
+const hasProfileDocs = computed(() => profileAttachments.value.length > 0);
 </script>
 
 <template>
@@ -166,7 +173,7 @@ const calculateTotalAmount = computed(() => {
                                     </p>
                                 </div>
                                 <span class="text-red-600 font-bold"
-                                    >₱{{ vehicle.rental_rate.toLocaleString() }}/day</span
+                                    >{{ vehicle.rental_rate != null ? '₱' + Number(vehicle.rental_rate).toLocaleString() + '/day' : 'Rate TBD' }}</span
                                 >
                             </div>
                             <p class="text-gray-600 mb-4">
@@ -225,19 +232,19 @@ const calculateTotalAmount = computed(() => {
                         <h3 class="font-semibold text-gray-800">
                             {{ selectedVehicle.brand }} {{ selectedVehicle.model }}
                         </h3>
-                        <p class="text-red-600 font-semibold">₱{{ selectedVehicle.rental_rate.toLocaleString() }}/day</p>
+                        <p class="text-red-600 font-semibold">{{ selectedVehicle.rental_rate != null ? '₱' + Number(selectedVehicle.rental_rate).toLocaleString() + '/day' : 'Rate TBD' }}</p>
                     </div>
 
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Start Date
+                                Start Date &amp; Time
                             </label>
                             <input
-                                type="date"
+                                type="datetime-local"
                                 v-model="form.start_date"
                                 class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-                                :min="new Date().toISOString().split('T')[0]"
+                                :min="new Date().toISOString().slice(0,16)"
                                 required
                             >
                             <div v-if="formErrors.start_date" class="text-red-500 text-sm mt-1">
@@ -247,10 +254,10 @@ const calculateTotalAmount = computed(() => {
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
-                                End Date
+                                End Date &amp; Time
                             </label>
                             <input
-                                type="date"
+                                type="datetime-local"
                                 v-model="form.end_date"
                                 class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
                                 :min="form.start_date"
@@ -271,105 +278,79 @@ const calculateTotalAmount = computed(() => {
                                 class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
                                 placeholder="Any special requests or notes?"
                             ></textarea>
+                            <div v-if="formErrors.notes" class="text-red-500 text-sm mt-1">{{ formErrors.notes }}</div>
                         </div>
 
-                        <!-- Valid IDs Upload -->
+                        <!-- Documents -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Valid IDs (Required)
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Valid IDs / Documents
                             </label>
+
+                            <!-- Profile docs on file -->
+                            <div v-if="hasProfileDocs" class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <p class="text-xs font-semibold text-green-700 mb-2">
+                                    Documents on file — will be used automatically
+                                </p>
+                                <div class="flex flex-wrap gap-2">
+                                    <a v-for="att in profileAttachments" :key="att.id" :href="att.file_path" target="_blank">
+                                        <img v-if="['jpg','jpeg','png'].includes(att.file_extension)" :src="att.file_path"
+                                            class="h-16 w-16 object-cover rounded border border-green-200 hover:opacity-80 transition" />
+                                        <div v-else class="h-16 w-16 flex items-center justify-center rounded border border-green-200 bg-green-100 hover:bg-green-200 transition">
+                                            <span class="text-xs text-green-700 font-medium">{{ att.file_extension.toUpperCase() }}</span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <p class="text-xs text-green-600 mt-2">Upload below only if you want to provide different documents for this rental.</p>
+                            </div>
+
                             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-red-500 transition-colors">
                                 <div class="space-y-1 text-center">
-                                    <svg
-                                        class="mx-auto h-12 w-12 text-gray-400"
-                                        stroke="currentColor"
-                                        fill="none"
-                                        viewBox="0 0 48 48"
-                                    >
-                                        <path
-                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                            stroke-width="2"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                        />
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                     <div class="flex text-sm text-gray-600">
-                                        <label
-                                            for="file-upload"
-                                            class="relative cursor-pointer rounded-md font-medium text-red-600 hover:text-red-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500"
-                                        >
-                                            <span>Upload files</span>
-                                            <input
-                                                id="file-upload"
-                                                type="file"
-                                                multiple
-                                                class="sr-only"
-                                                accept=".jpg,.jpeg,.png,.pdf"
-                                                @change="handleFileUpload"
-                                            >
+                                        <label for="file-upload" class="relative cursor-pointer rounded-md font-medium text-red-600 hover:text-red-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500">
+                                            <span>{{ hasProfileDocs ? 'Upload different files' : 'Upload files' }}</span>
+                                            <input id="file-upload" type="file" multiple class="sr-only" accept=".jpg,.jpeg,.png,.pdf" @change="handleFileUpload">
                                         </label>
                                         <p class="pl-1">or drag and drop</p>
                                     </div>
-                                    <p class="text-xs text-gray-500">
-                                        PNG, JPG, PDF up to 10MB each
-                                    </p>
+                                    <p class="text-xs text-gray-500">PNG, JPG, PDF up to 10MB each{{ hasProfileDocs ? ' (optional)' : ' (required)' }}</p>
                                 </div>
                             </div>
 
-                            <!-- File Preview Grid -->
+                            <!-- New file preview grid -->
                             <div v-if="form.attachments.length" class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <div
-                                    v-for="(file, index) in form.attachments"
-                                    :key="index"
-                                    class="relative group bg-gray-50 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-red-500 transition-colors"
-                                >
-                                    <!-- Image Preview -->
+                                <div v-for="(file, index) in form.attachments" :key="index"
+                                    class="relative group bg-gray-50 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-red-500 transition-colors">
                                     <div v-if="isImageFile(file)" class="aspect-square">
-                                        <img
-                                            :src="getFilePreviewUrl(file)"
-                                            :alt="file.name"
-                                            class="w-full h-full object-cover cursor-pointer"
-                                            @click="previewFileHandler(file)"
-                                        />
+                                        <img :src="getFilePreviewUrl(file)" :alt="file.name"
+                                            class="w-full h-full object-cover cursor-pointer" @click="previewFileHandler(file)" />
                                     </div>
-
-                                    <!-- PDF Preview -->
                                     <div v-else-if="isPdfFile(file)"
-                                         class="aspect-square flex flex-col items-center justify-center p-4 cursor-pointer"
-                                         @click="previewFileHandler(file)">
+                                        class="aspect-square flex flex-col items-center justify-center p-4 cursor-pointer"
+                                        @click="previewFileHandler(file)">
                                         <svg class="h-16 w-16 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
                                         </svg>
                                         <p class="mt-2 text-xs text-gray-600 text-center font-medium">PDF</p>
                                     </div>
-
-                                    <!-- File name and actions -->
                                     <div class="p-2 bg-white">
-                                        <p class="text-xs text-gray-600 truncate" :title="file.name">
-                                            {{ file.name }}
-                                        </p>
+                                        <p class="text-xs text-gray-600 truncate" :title="file.name">{{ file.name }}</p>
                                         <div class="flex justify-between items-center mt-1">
-                                            <span class="text-xs text-gray-500">
-                                                {{ (file.size / 1024).toFixed(1) }} KB
-                                            </span>
+                                            <span class="text-xs text-gray-500">{{ (file.size / 1024).toFixed(1) }} KB</span>
                                             <div class="flex space-x-1">
-                                                <button
-                                                    type="button"
-                                                    @click="previewFileHandler(file)"
-                                                    class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                                                    title="Preview"
-                                                >
+                                                <button type="button" @click="previewFileHandler(file)"
+                                                    class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded" title="Preview">
                                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                     </svg>
                                                 </button>
-                                                <button
-                                                    type="button"
-                                                    @click="removeFile(index)"
-                                                    class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
-                                                    title="Remove"
-                                                >
+                                                <button type="button" @click="removeFile(index)"
+                                                    class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded" title="Remove">
                                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                                     </svg>

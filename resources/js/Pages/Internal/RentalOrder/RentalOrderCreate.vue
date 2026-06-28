@@ -110,12 +110,12 @@ const submit = () => {
 
                             <!-- Dates -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Start Date</label>
+                                <label class="block text-sm font-medium text-gray-700">Start Date &amp; Time</label>
                                 <input
-                                    type="date"
+                                    type="datetime-local"
                                     v-model="form.start_date"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-                                    :min="new Date().toISOString().split('T')[0]"
+                                    :min="new Date().toISOString().slice(0,16)"
                                 >
                                 <div v-if="errors.start_date" class="mt-1 text-sm text-red-600">
                                     {{ errors.start_date }}
@@ -123,9 +123,9 @@ const submit = () => {
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">End Date</label>
+                                <label class="block text-sm font-medium text-gray-700">End Date &amp; Time</label>
                                 <input
-                                    type="date"
+                                    type="datetime-local"
                                     v-model="form.end_date"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                                     :min="form.start_date"
@@ -146,6 +146,7 @@ const submit = () => {
                                         {{ status.charAt(0).toUpperCase() + status.slice(1) }}
                                     </option>
                                 </select>
+                                <div v-if="errors.status" class="mt-1 text-sm text-red-600">{{ errors.status }}</div>
                             </div>
 
                             <!-- Notes -->
@@ -157,6 +158,7 @@ const submit = () => {
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                                     placeholder="Any special notes or requirements?"
                                 ></textarea>
+                                <div v-if="errors.notes" class="mt-1 text-sm text-red-600">{{ errors.notes }}</div>
                             </div>
                         </div>
 

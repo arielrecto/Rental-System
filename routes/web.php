@@ -66,6 +66,7 @@ Route::prefix('internal')->middleware('auth')->name('internal.')->group(function
     });
     Route::resource('rental-orders', InternalRentalOrderController::class);
     Route::resource('user-management', UserManagementController::class);
+    Route::patch('user-management/{user}/verify-license', [UserManagementController::class, 'verifyLicense'])->name('user-management.verify-license');
     Route::prefix('report')->as('report.')->group(function () {
         Route::get('revenue', [ReportController::class, 'revenue'])->name('revenue');
         Route::get('rental-analytics', [ReportController::class, 'rentalAnalytic'])->name('rental-analytics');
@@ -94,8 +95,9 @@ Route::prefix('kiosk')->as('kiosk.')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::match(['PATCH', 'POST'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile/attachments/{attachment}', [ProfileController::class, 'deleteAttachment'])->name('profile.attachment.delete');
 });
 
 require __DIR__ . '/auth.php';

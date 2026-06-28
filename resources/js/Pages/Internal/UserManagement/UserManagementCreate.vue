@@ -127,6 +127,7 @@ const submit = () => {
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                                         required
                                     >
+                                    <div v-if="errors.password_confirmation" class="mt-1 text-sm text-red-600">{{ errors.password_confirmation }}</div>
                                 </div>
 
                                 <div>
@@ -160,6 +161,7 @@ const submit = () => {
                                         placeholder="Confirm PIN"
                                         required
                                     >
+                                    <div v-if="errors.pin_confirmation" class="mt-1 text-sm text-red-600">{{ errors.pin_confirmation }}</div>
                                 </div>
                             </div>
                         </div>

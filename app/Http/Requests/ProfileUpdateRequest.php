@@ -8,16 +8,11 @@ use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
+            'name'                           => ['required', 'string', 'max:255'],
+            'email'                          => [
                 'required',
                 'string',
                 'lowercase',
@@ -25,6 +20,19 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'first_name'                     => ['nullable', 'string', 'max:255'],
+            'last_name'                      => ['nullable', 'string', 'max:255'],
+            'phone_number'                   => ['nullable', 'string', 'max:20'],
+            'address'                        => ['nullable', 'string'],
+            'gender'                         => ['nullable', 'in:male,female'],
+            'birth_date'                     => ['nullable', 'date'],
+            'emergency_contact_name'         => ['nullable', 'string', 'max:255'],
+            'emergency_contact_relationship' => ['nullable', 'string', 'max:100'],
+            'emergency_contact_phone'        => ['nullable', 'string', 'max:20'],
+            'drivers_license_number'         => ['nullable', 'string', 'max:50'],
+            'drivers_license_expiry'         => ['nullable', 'date'],
+            'valid_id.*'                     => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
+            'drivers_license_file.*'         => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
         ];
     }
 }

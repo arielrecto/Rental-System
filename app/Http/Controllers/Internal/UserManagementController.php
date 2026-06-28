@@ -28,9 +28,9 @@ class UserManagementController extends Controller
         return Inertia::render('Internal/UserManagement/UserManagementCreate');
     }
 
-    public function show( $id){
-        $user = User::with(['profile', 'roles'])->find($id);
-
+    public function show($id)
+    {
+        $user = User::with(['profile.attachments', 'roles'])->find($id);
 
         return Inertia::render('Internal/UserManagement/UserManagementShow', compact('user'));
     }
@@ -143,5 +143,17 @@ class UserManagementController extends Controller
 
         return redirect()->route('internal.user-management.index')
             ->with('success', 'User deleted successfully');
+    }
+
+    public function verifyLicense(Request $request, User $user)
+    {
+        $profile = $user->profile()->firstOrCreate(['user_id' => $user->id]);
+
+        $profile->update([
+            'drivers_license_verified'    => true,
+            'drivers_license_verified_at' => now(),
+        ]);
+
+        return back()->with('success', 'Driver\'s license marked as verified.');
     }
 }

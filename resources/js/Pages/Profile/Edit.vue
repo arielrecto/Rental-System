@@ -14,6 +14,10 @@ defineProps({
     status: {
         type: String,
     },
+    profile: {
+        type: Object,
+        default: () => null,
+    },
 });
 
 const page = usePage();
@@ -48,7 +52,8 @@ const Layout = computed(() =>
                             <UpdateProfileInformationForm
                                 :must-verify-email="mustVerifyEmail"
                                 :status="status"
-                                class="max-w-2xl"
+                                :profile="profile"
+class="max-w-2xl"
                             />
                         </div>
                     </div>

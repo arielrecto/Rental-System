@@ -13,14 +13,23 @@ class Profile extends Model
         'address',
         'gender',
         'birth_date',
-        'user_id'
+        'user_id',
+        'emergency_contact_name',
+        'emergency_contact_relationship',
+        'emergency_contact_phone',
+        'drivers_license_number',
+        'drivers_license_expiry',
+        'drivers_license_verified',
+        'drivers_license_verified_at',
     ];
-
-
-
 
     public function user()
     {
-        return $this->belongTo(User::class);
+        return $this->belongsTo(User::class);
+    }
+
+    public function attachments()
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
     }
 }
